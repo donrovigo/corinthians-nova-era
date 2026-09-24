@@ -290,6 +290,70 @@
       }
     },
 
+    settleTransferBan(G) {
+      if (!this.requireAccess(G, "regularização do transfer ban")) return false;
+      const s = this.init(G);
+      const debt = Number(s.transferMarket?.transferBanDebt || 21500000);
+      if (!s.club || Number(s.club.cash || 0) < debt) {
+        G.addNews("⛔ Transfer Ban mantido", "O caixa disponível não cobre a dívida de registro.", "JURÍDICO");
+        return false;
+      }
+      s.club.cash -= debt;
+      s.finance.expenses += debt;
+      s.transferMarket.transferBanDebt = 0;
+      s.transferMarket.transferBan = false;
+      s.transferMarket.activeBans = 0;
+      s.transferMarket.canRegisterPlayers = true;
+      s.club.transferBan = false;
+      G.addNews("✅ Transfer Ban resolvido", "A dívida de registro foi quitada e o clube pode voltar a registrar reforços.", "MERCADO");
+      G.addMail("Jurídico", "Registro liberado", "O bloqueio de registro foi encerrado após a quitação do compromisso.", "JURÍDICO");
+      return true;
+    },
+
+    autoLineup(G) {
+      if (!this.requireAccess(G, "escalação")) return false;
+      this.prepareSquad(G);
+      const available = G.state.squad.filter(p => !p.injured && !p.suspended).sort((a,b) => (b.overall||0) - (a.overall||0)).slice(0,11);
+      if (available.length < 11) return false;
+      G.state.lineup = {};
+      available.forEach((p,i) => G.state.lineup[i] = p.id);
+      G.state.bench = G.state.squad.filter(p => !available.includes(p) && !p.injured && !p.suspended).sort((a,b)=>(b.overall||0)-(a.overall||0)).slice(0,9).map(p=>p.id);
+      G.addNews("📋 Escalação automática", "Os 11 jogadores disponíveis de maior avaliação foram selecionados.", "FUTEBOL");
+      return true;
+    },
+
+    startNextMatch(G) {
+      if (!this.requireAccess(G, "partida")) return false;
+      const s = this.init(G);
+      let fixture = (s.matches || []).find(m => !m.played && (m.status === "scheduled" || m.status === "pre_match"));
+      if (!fixture && window.CompetitionCore && CompetitionCore.onDay) {
+        CompetitionCore.onDay(G);
+        fixture = (s.matches || []).find(m => !m.played && (m.status === "scheduled" || m.status === "pre_match"));
+      }
+      if (!fixture) {
+        G.addNews("📅 Nenhuma partida", "Não há partida oficial disponível para iniciar na data atual.", "CALENDÁRIO");
+        return false;
+      }
+      this.beforeMatch(G, fixture);
+      G.startMatchday(fixture);
+      return true;
+    },
+
+    sellPlayer(G, playerId, fee) {
+      if (!this.requireAccess(G, "venda de jogador")) return false;
+      const s = this.init(G);
+      const p = s.squad.find(x => String(x.id) === String(playerId));
+      if (!p) return false;
+      const value = Math.max(100000, Number(fee || p.marketValue || 1000000));
+      s.club.cash = Number(s.club.cash || 0) + value;
+      s.finance.revenue += value;
+      s.market.completed.push({ type:"sale", playerId:p.id, player:p.name, fee:value, date:G.formatDate() });
+      s.squad = s.squad.filter(x => x !== p);
+      delete s.lineup[Object.keys(s.lineup).find(k => s.lineup[k] === p.id)];
+      G.addNews("💰 Venda concluída", p.name + " foi vendido por R$ " + value.toLocaleString("pt-BR") + ".", "MERCADO");
+      return true;
+    },
+
     dashboard(G) {
       const s = this.init(G);
       return {
