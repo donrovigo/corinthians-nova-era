@@ -819,3 +819,13 @@ html, body, #app, #game-screen.active { overflow: hidden !important; }
 .decision-card h4 { margin:4px 0; font-size:13px; }
 .decision-card p { color:#999; font-size:10px; line-height:1.35; margin-bottom:6px; }
 .decision-option { width:100%; margin-top:4px; text-align:left; }
+
+#manager-hub { margin: 4px 0 6px; }
+.manager-hub-grid { display:grid; grid-template-columns:1.15fr 1fr 1fr; gap:6px; }
+.manager-hub-grid section { min-height:68px; padding:7px 8px; border:1px solid var(--border); background:#0e0e0e; border-radius:6px; display:grid; grid-template-columns:auto 1fr; gap:2px 8px; align-items:center; }
+.manager-hub-grid b { grid-column:1/-1; font-size:9px; letter-spacing:1px; color:#aaa; }
+.manager-hub-grid strong { font-size:10px; }
+.manager-hub-grid span,.manager-hub-grid small { color:#999; font-size:9px; }
+.manager-hub-grid button { grid-column:1/-1; min-height:22px; padding:3px 6px; font-size:9px; }
+@media(max-width:1100px){.manager-hub-grid{grid-template-columns:1fr 1fr}.manager-hub-grid section:last-child{display:none}}
+@media(max-width:850px){#manager-hub{overflow:auto;max-height:130px}.manager-hub-grid{grid-template-columns:1fr}}
