@@ -981,3 +981,291 @@ html, body, #app, #game-screen.active { overflow: hidden !important; }
   justify-content:flex-end;
   margin-top:22px;
 }
+
+
+/* =========================================================
+   TELA INICIAL — NOVA ERA / CAREER SELECT
+   ========================================================= */
+#home-screen.active {
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(170,170,170,.08), transparent 28%),
+    radial-gradient(circle at 12% 82%, rgba(255,255,255,.035), transparent 24%),
+    #080808;
+  color: #f2f2f2;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+#home-screen .hero {
+  position: relative;
+  min-height: 390px;
+  display: flex;
+  align-items: flex-end;
+  padding: 54px clamp(28px, 7vw, 120px) 48px;
+  overflow: hidden;
+  border-bottom: 1px solid #242424;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.96) 0%, rgba(0,0,0,.82) 42%, rgba(0,0,0,.28) 100%),
+    linear-gradient(180deg, transparent 45%, #080808 100%);
+}
+
+#home-screen .hero::before {
+  content: "CORINTHIANS";
+  position: absolute;
+  right: -40px;
+  top: 12px;
+  font-size: clamp(90px, 16vw, 250px);
+  line-height: .8;
+  font-weight: 950;
+  letter-spacing: -8px;
+  color: rgba(255,255,255,.025);
+  pointer-events: none;
+}
+
+#home-screen .hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 42%;
+  height: 3px;
+  background: #eee;
+  opacity: .75;
+}
+
+#home-screen .hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 820px;
+}
+
+#home-screen .hero .eyebrow {
+  display: inline-flex;
+  padding: 7px 10px;
+  margin-bottom: 18px;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  background: rgba(15,15,15,.86);
+  color: #aaa;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+#home-screen .hero h1 {
+  margin: 0;
+  font-size: clamp(48px, 7vw, 92px);
+  line-height: .88;
+  letter-spacing: -4px;
+  font-weight: 950;
+}
+
+#home-screen .hero .subtitle {
+  margin: 22px 0 10px;
+  color: #aaa;
+  font-size: clamp(14px, 1.35vw, 19px);
+  line-height: 1.5;
+}
+
+#home-screen .hero .season {
+  margin: 18px 0 0;
+  color: #eee;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+#home-screen .career-section {
+  position: relative;
+  z-index: 3;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 42px clamp(20px, 4vw, 60px) 70px;
+}
+
+#home-screen .section-header {
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(300px, 1.5fr) minmax(220px, 1fr);
+  align-items: end;
+  gap: 25px;
+  margin-bottom: 25px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #242424;
+}
+
+#home-screen .section-header .eyebrow {
+  color: #888;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+
+#home-screen .section-header h2 {
+  margin: 0;
+  font-size: clamp(25px, 3vw, 38px);
+  line-height: 1;
+  letter-spacing: -1.5px;
+}
+
+#home-screen .section-header p {
+  margin: 0;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+#home-screen .career-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#home-screen .career-card {
+  position: relative;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #292929;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #151515, #0e0e0e);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+#home-screen .career-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: #ddd;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .18s ease;
+}
+
+#home-screen .career-card:hover,
+#home-screen .career-card.selected {
+  transform: translateY(-4px);
+  border-color: #555;
+  background: linear-gradient(145deg, #1b1b1b, #101010);
+}
+
+#home-screen .career-card:hover::before,
+#home-screen .career-card.selected::before {
+  transform: scaleX(1);
+}
+
+#home-screen .career-icon {
+  position: absolute;
+  right: 17px;
+  top: 16px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #101010;
+  font-size: 19px;
+}
+
+#home-screen .career-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 24px 20px 20px;
+}
+
+#home-screen .career-type {
+  color: #777;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+#home-screen .career-card h3 {
+  margin: 8px 0 7px;
+  font-size: 25px;
+  letter-spacing: -.7px;
+}
+
+#home-screen .career-card p {
+  max-width: 420px;
+  margin: 0 0 12px;
+  color: #999;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#home-screen .career-card ul {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 14px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  color: #777;
+  font-size: 9px;
+}
+
+#home-screen .career-card li::before {
+  content: "•";
+  margin-right: 6px;
+  color: #aaa;
+}
+
+#home-screen .career-card button {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  min-height: 42px;
+  margin-top: auto;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .8px;
+  border-radius: 6px;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+
+#home-screen .career-card button:hover {
+  transform: translateY(-1px);
+  border-color: #aaa;
+}
+
+#home-screen .president-card {
+  grid-column: span 2;
+  min-height: 300px;
+}
+
+#home-screen .president-card .career-content {
+  padding-right: 95px;
+}
+
+@media (max-width: 1100px) {
+  #home-screen .career-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  #home-screen .president-card { grid-column: span 2; }
+  #home-screen .section-header { grid-template-columns: 1fr 1.5fr; }
+  #home-screen .section-header p { grid-column: 2; }
+}
+
+@media (max-width: 700px) {
+  #home-screen .hero { min-height: 340px; padding: 40px 22px 35px; }
+  #home-screen .hero h1 { font-size: 52px; letter-spacing: -2.5px; }
+  #home-screen .career-section { padding: 30px 14px 50px; }
+  #home-screen .section-header { display: block; }
+  #home-screen .section-header h2 { margin: 8px 0; }
+  #home-screen .career-grid { grid-template-columns: 1fr; }
+  #home-screen .president-card { grid-column: auto; }
+  #home-screen .president-card .career-content { padding-right: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #home-screen .career-card,
+  #home-screen .career-card::before,
+  #home-screen .career-card button { transition: none; }
+}
