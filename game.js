@@ -621,6 +621,7 @@ const Game = {
     const gf = isHome ? m.score.home : m.score.away, ga = isHome ? m.score.away : m.score.home;
     this.state.results = this.state.results || [];
     this.state.results.push({ date: this.formatDate(), opponent: isHome ? m.away : m.home, gf, ga, competition: fixture?.competition || "Jogo" });
+    if (window.CompetitionCore) CompetitionCore.registerResult(this, fixture?.competition === "Libertadores" ? "libertadores" : "brasileirao", gf, ga);
     this.change("reputation", gf > ga ? 2 : gf === ga ? 0 : -2);
     this.change("fanMood", gf > ga ? 4 : gf === ga ? 0 : -5);
     this.addNews("🏁 Fim de jogo", `${m.home} ${gf} x ${ga} ${m.away}`, "JOGO");
