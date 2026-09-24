@@ -1707,7 +1707,7 @@
       if (!el) return;
       const windowText = s.transferWindow?.open ? "MERCADO ABERTO" : "MERCADO FECHADO";
       el.innerHTML =
-        '<div class="season-mini"><strong>⚽ TEMPORADA</strong><span>' + (st.played || 0) + ' J</span><span>' + (st.points || 0) + ' PTS</span><span>' + (st.wins || 0) + 'V ' + (st.draws || 0) + 'E ' + (st.losses || 0) + 'D</span><b>' + windowText + '</b></div>';
+        '<div class="season-mini"><strong>⚽ TEMPORADA</strong><span>' + (st.played || 0) + ' J</span><span>' + (st.points || 0) + ' PTS</span><span>' + (st.wins || 0) + 'V ' + (st.draws || 0) + 'E ' + (st.losses || 0) + 'D</span><b>' + windowText + '</b></div><div class="season-mini"><strong>🇧🇷 BRASILEIRÃO</strong><span>Posição: ' + ((s.competitions?.brasileirao?.position)||"-") + '</span><span>Saldo: ' + (((s.leagueTables?.brasileirao?.Corinthians?.gf||0)-(s.leagueTables?.brasileirao?.Corinthians?.ga||0))) + '</span></div>';
     }
 
     function renderInformationCenter() {
