@@ -63,6 +63,7 @@ const GameEngine = {
       Game.state.date.setDate(Game.state.date.getDate() + 1);
       this.processDailySystems();
       if (window.CareerCore) CareerCore.tick(Game);
+      if (window.CompetitionCore) CompetitionCore.onDay(Game);
       if (typeof Game !== "undefined" && Game.processInformationCenter) Game.processInformationCenter();
       this.checkTasks();
       this.checkRandomEvent();
