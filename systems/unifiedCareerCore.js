@@ -410,9 +410,10 @@
     if (originalFinish) {
       G.finishMatchday = function() {
         const before = G.state.matchEngine && G.state.matchEngine.active;
-        const fixtureIdBefore = G.state.matchEngine && G.state.matchEngine.fixtureId;\n        const result = originalFinish();
+        const fixtureIdBefore = G.state.matchEngine && G.state.matchEngine.fixtureId;
+        const result = originalFinish();
         if (before) {
-          const fixture = (G.state.matches || []).find(m => m.status === "played" && String(m.id) === String(G.state.matchEngine && G.state.matchEngine.fixtureId));
+          const fixture = (G.state.matches || []).find(m => m.status === "played" && String(m.id) === String(fixtureIdBefore));
           if (fixture) Core.registerResult(G, fixture);
         }
         Core.syncMirrors(G);
