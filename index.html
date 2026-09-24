@@ -638,6 +638,7 @@
               <div><span class="eyebrow">AÇÕES</span><h3>Próximo passo</h3></div>
             </div>
             <div id="season-status"></div>
+      <div id="manager-hub"></div>
       <div id="gameplay-actions" class="gameplay-actions"></div>
           </div>
 
@@ -1552,6 +1553,7 @@
       renderCommitments();
       renderInformationCenter();
       renderSeasonStatus();
+      renderManagerHub();
 
       renderGameLog();
 
@@ -1627,6 +1629,20 @@
 
     }
 
+
+    function renderManagerHub() {
+      if (!window.Game) return;
+      Game.ensureManagerModel?.();
+      const t = Game.state.tactics;
+      const rec = Game.state.recruitment;
+      const el = document.getElementById("manager-hub");
+      if (!el) return;
+      el.innerHTML = '<div class="manager-hub-grid">' +
+        '<section><b>🧠 TÁTICA</b><strong>COM POSSE</strong><span>' + t.inPossession.formation + ' · Ritmo ' + t.inPossession.tempo + '</span><small>Pressão ' + t.inPossession.pressing + ' · Passe ' + t.inPossession.passing + '</small><strong>SEM POSSE</strong><span>' + t.outOfPossession.formation + ' · Linha ' + t.outOfPossession.line + '</span><small>Pressão ' + t.outOfPossession.press + ' · Compactação ' + t.outOfPossession.compactness + '</small></section>' +
+        '<section><b>🔎 RECRUTAMENTO</b><strong>' + rec.focuses.filter(x => x.active).length + ' FOCO(S) ATIVO(S)</strong><span>Scouting acompanha necessidades do elenco.</span><button class="gameplay-action" onclick="Game.createRecruitmentFocus(\'atacante\',\'titular\',80); updateDashboard();">+ Buscar atacante</button></section>' +
+        '<section><b>👔 COMISSÃO</b><strong>' + (Game.state.manager?.style || "equilibrado").toUpperCase() + '</strong><span>Autoridade ' + (Game.state.manager?.authority || 50) + ' · Relação ' + (Game.state.manager?.relationship || 50) + '</span><button class="gameplay-action" onclick="Game.applyTacticalPlan({style:\'intenso\',inPossession:{tempo:70,pressing:65},outOfPossession:{press:70}}); updateDashboard();">Aplicar plano intenso</button></section>' +
+      '</div>';
+    }
 
     function renderSeasonStatus() {
       if (!window.Game) return;
