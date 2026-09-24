@@ -1415,21 +1415,60 @@
       if (shell) shell.classList.toggle("management-locked", presidential && !won);
     }
 
+    function openInformationItem(type, index) {
+      if (!window.Game) return;
+      Game.ensureInformationCenter?.();
+      const source = type === "mail" ? (Game.state.mail || []) : (Game.state.news || []);
+      const item = source[index];
+      if (!item) return;
+      item.read = true;
+      const title = type === "mail" ? item.subject : item.title;
+      const prefix = type === "mail" ? `✉️ ${item.from || "Correio"}` : `📰 ${item.category || "CLUBE"}`;
+      setEvent(title, item.message || "", [
+        { text: "Fechar informação", action: () => { updateDashboard(); } }
+      ]);
+      Game.log(prefix + ": " + title);
+      renderInformationCenter();
+    }
+
+    function renderInformationCenter() {
+      if (!window.Game) return;
+      Game.ensureInformationCenter?.();
+      const news = Game.state.news || [];
+      const mail = Game.state.mail || [];
+      const unreadNews = news.filter(x => !x.read).length;
+      const unreadMail = mail.filter(x => !x.read).length;
+      const nc = document.getElementById("news-count");
+      const mc = document.getElementById("mail-count");
+      if (nc) nc.textContent = unreadNews;
+      if (mc) mc.textContent = unreadMail;
+      const nh = document.getElementById("news-headline");
+      const mh = document.getElementById("mail-headline");
+      if (nh) nh.textContent = news[0]?.title || "Nenhuma notícia nova";
+      if (mh) mh.textContent = mail[0]?.subject || "Nenhuma mensagem nova";
+    }
+
     function openInfoFeed(type) {
       const feed = document.getElementById("info-feed");
       if (!feed) return;
       document.querySelectorAll(".news-item").forEach(x => x.classList.remove("active"));
       if (window.Game && Game.ensureInformationCenter) Game.ensureInformationCenter();
       const source = type === "mail" ? (Game.state.mail || []) : (Game.state.news || []);
-      const items = source.length ? source.slice(0, 4).map(item => [
-        type === "mail" ? "✉️" : "📰",
-        type === "mail" ? item.subject : item.title,
-        item.message
-      ]) : [[type === "mail" ? "✉️" : "📰", "Sem novidades", "O centro de informação será atualizado conforme o calendário avançar."]];
-      feed.innerHTML = items.map(item => '<article><span>'+item[0]+'</span><div><strong>'+escapeHtml(item[1])+'</strong><p>'+escapeHtml(item[2])+'</p></div></article>').join("");
-      source.slice(0, 4).forEach(item => item.read = true);
+      const items = source.slice(0, 12);
+      if (!items.length) {
+        feed.innerHTML = '<article><span>' + (type === "mail" ? "✉️" : "📰") + '</span><div><strong>Sem novidades</strong><p>O centro de informação será atualizado conforme o calendário avançar.</p></div></article>';
+      } else {
+        feed.innerHTML = items.map((item, index) => {
+          const title = type === "mail" ? item.subject : item.title;
+          const meta = type === "mail" ? ((item.from || "Clube") + " · " + (item.department || "DIRETORIA")) : ((item.category || "CLUBE") + " · " + (item.date || ""));
+          return '<article class="' + (!item.read ? 'unread' : '') + '" role="button" tabindex="0" onclick="openInformationItem(\'' + type + '\',' + index + ')">' +
+            '<span>' + (type === "mail" ? "✉️" : "📰") + '</span><div><strong>' + escapeHtml(title || "Sem título") + '</strong><p>' +
+            escapeHtml(item.message || "") + '</p><small>' + escapeHtml(meta) + ' · CLIQUE PARA ABRIR</small></div><b>›</b></article>';
+        }).join("");
+      }
       const active = document.querySelector(type === "mail" ? ".news-item:nth-child(2)" : ".news-item:nth-child(1)");
       if (active) active.classList.add("active");
+      renderInformationCenter();
     }
 
     function updateDashboard() {
