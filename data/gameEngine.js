@@ -251,6 +251,20 @@ const GameEngine = {
             "fanMood",
             1
           );
+
+          if (typeof Tasks !== "undefined" && Tasks.create &&
+              !Tasks.hasLink?.("futebol", "matchKey", competition.name + "|" + date)) {
+            Tasks.create({
+              title: "Preparar " + (competition.name || "partida"),
+              description: "Revisar preparação esportiva e decisões do departamento de futebol.",
+              type: "futebol",
+              deadline: new Date(Game.state.date).toISOString(),
+              priority: 7,
+              career: Game.state.career,
+              requiresDecision: true,
+              data: { matchKey: competition.name + "|" + date }
+            });
+          }
         }
       });
     });
@@ -307,6 +321,11 @@ const GameEngine = {
       this.log(
         `Contrato de ${member.name} termina em breve.`
       );
+
+      if (typeof Tasks !== "undefined" && Tasks.createContractTask &&
+          !Tasks.hasLink?.("contrato", "staffId", member.id)) {
+        Tasks.createContractTask(member);
+      }
     });
   },
 
