@@ -4,6 +4,20 @@ const Tasks = {
   completed: [],
   failed: [],
 
+  reset() {
+    this.active = [];
+    this.completed = [];
+    this.failed = [];
+  },
+
+  hasLink(type, key, value) {
+    return [...this.active, ...this.completed, ...this.failed].some(task =>
+      task.type === type &&
+      task.data &&
+      task.data[key] === value
+    );
+  },
+
   create({
     title,
     description = "",
