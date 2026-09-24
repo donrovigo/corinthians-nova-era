@@ -16,7 +16,7 @@ const COMPETITIONS = {
 
     importance: 70,
 
-    status: "completed",
+    status: "active",
 
     season: 2026,
 
@@ -144,7 +144,7 @@ const COMPETITIONS = {
 
     totalRounds: 38,
 
-    currentRound: 28,
+    currentRound: 1,
 
     points: {
 
@@ -185,7 +185,7 @@ const COMPETITIONS = {
 
     importance: 100,
 
-    status: "eliminated",
+    status: "active",
 
     season: 2026,
 
