@@ -883,3 +883,5 @@ const TransferMarket = {
 
 window.TransferMarket =
   TransferMarket;
+
+// Integrated with CareerCore/SquadCore through Game state.
