@@ -484,41 +484,25 @@ const Tasks = {
 
   },
 
-  createContractTask(
-    player
-  ) {
+  createContractTask(entity) {
 
-    if (!player) {
-      return null;
-    }
+    if (!entity) return null;
+
+    const isStaff = Boolean(entity.department || entity.role || entity.staffRole);
+    const idKey = isStaff ? "staffId" : "playerId";
+    const typeLabel = isStaff ? "membro da comissão" : "jogador";
 
     return this.create({
-
-      title:
-        `Renovar contrato de ${player.name}`,
-
-      description:
-        `O contrato de ${player.name} está próximo do vencimento.`,
-
-      type:
-        "contrato",
-
-      deadline:
-        player.contractUntil,
-
-      priority:
-        7,
-
-      requiresDecision:
-        true,
-
+      title: `Renovar contrato de ${entity.name}`,
+      description: `O contrato do ${typeLabel} ${entity.name} está próximo do vencimento.`,
+      type: "contrato",
+      deadline: entity.contractUntil,
+      priority: 7,
+      requiresDecision: true,
       data: {
-        playerId:
-          player.id
+        [idKey]: entity.id
       }
-
     });
-
   },
 
   createPoliticalMeeting({
