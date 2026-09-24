@@ -67,7 +67,7 @@ const COMPETITIONS = {
 
     importance: 90,
 
-    status: "completed",
+    status: "active",
 
     season: 2026,
 
@@ -251,6 +251,10 @@ const COMPETITIONS = {
 // =========================================================
 // JOGOS DO CORINTHIANS — BRASILEIRÃO 2026
 // =========================================================
+
+const BRASILEIRAO_TEAMS_2026 = ["Atlético-MG","Bahia","Botafogo","Bragantino","Ceará","Chapecoense","Corinthians","Cruzeiro","Flamengo","Fluminense","Grêmio","Internacional","Mirassol","Palmeiras","Santos","São Paulo","Sport","Vasco","Vitória","Remo"];
+
+function getBrasileiraoTeams(){ return BRASILEIRAO_TEAMS_2026.slice(); }
 
 const CORINTHIANS_BRASILEIRAO_2026 = [
 
@@ -576,6 +580,8 @@ window.getCompetition =
 
 window.getBrasileiraoFixtures =
   getBrasileiraoFixtures;
+
+window.getBrasileiraoTeams = getBrasileiraoTeams;
 
 window.getLibertadoresFixtures =
   getLibertadoresFixtures;
