@@ -380,6 +380,23 @@
 
     Core.init(G);
     Core.prepareSquad(G);
+
+    // Guarda de segurança: derrota eleitoral remove autoridade de gestão.
+    [
+      "boardManagement", "footballManagement", "scouting", "manageTransfers",
+      "transferPlayer", "buyPlayer", "sellPlayer", "manageFinance",
+      "financeManagement", "manageContracts", "manageSquad", "setLineup",
+      "openMarket", "negotiateTransfer"
+    ].forEach(function(name) {
+      if (typeof G[name] !== "function" || G[name].__managementGuard) return;
+      const original = G[name].bind(G);
+      const guarded = function() {
+        if (!Core.requireAccess(G, name)) return false;
+        return original.apply(G, arguments);
+      };
+      guarded.__managementGuard = true;
+      G[name] = guarded;
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire);
