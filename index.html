@@ -16,6 +16,7 @@
 <script src="data/club.js" defer></script>
 <script src="data/politics.js" defer></script>
 <script src="data/competitions.js" defer></script>
+<script src="systems/calendar.js" defer></script>
 
 <!-- ============================= -->
 <!-- SISTEMAS DO JOGO              -->
@@ -26,12 +27,12 @@
 <script src="data/delegation.js" defer></script>
 <script src="data/finance.js" defer></script>
 
-<script src="systems/transferMarket.js" defer></script>
-<script src="systems/contracts.js" defer></script>
-<script src="systems/loans.js" defer></script>
-<script src="systems/playerOffers.js" defer></script>
+<script src="data/transferMarket.js" defer></script>
+<script src="data/contracts.js" defer></script>
+<script src="data/loans.js" defer></script>
+<script src="data/playerOffers.js" defer></script>
 <script src="systems/tasks.js" defer></script>
-<script src="systems/gameEngine.js" defer></script>
+<script src="data/gameEngine.js" defer></script>
 
 <!-- ============================= -->
 <!-- MOTOR PRINCIPAL                -->
@@ -527,6 +528,26 @@
 
             </div>
 
+          </div>
+
+
+          <!-- CENTRAL DE COMPROMISSOS -->
+          <div class="panel-card commitments-panel">
+            <div class="panel-heading-row">
+              <div>
+                <span class="eyebrow">CENTRAL DE COMPROMISSOS</span>
+                <h3>Agenda da gestão</h3>
+              </div>
+              <button class="mini-button" onclick="renderCommitments()">ATUALIZAR</button>
+            </div>
+            <div class="commitment-summary">
+              <span><strong id="tasks-critical">0</strong> críticas</span>
+              <span><strong id="tasks-today">0</strong> hoje</span>
+              <span><strong id="tasks-total">0</strong> pendentes</span>
+            </div>
+            <div id="commitments-list" class="commitments-list">
+              <p class="empty-state">Nenhum compromisso pendente.</p>
+            </div>
           </div>
 
 
@@ -1037,7 +1058,16 @@
 
     function advanceGame() {
 
-      genericNext();
+      if (!window.Game) {
+        console.error("Motor do jogo não carregado.");
+        return;
+      }
+
+      Game.advanceDay();
+      updateDashboard();
+      updateElectionProgress();
+      renderCommitments();
+      renderGameLog();
 
     }
 
@@ -1194,6 +1224,7 @@
 
 
       updateElectionProgress();
+      renderCommitments();
 
       renderGameLog();
 
@@ -1267,6 +1298,60 @@
           })
           .join("");
 
+    }
+
+
+    function renderCommitments() {
+
+      const list = document.getElementById("commitments-list");
+      const total = document.getElementById("tasks-total");
+      const today = document.getElementById("tasks-today");
+      const critical = document.getElementById("tasks-critical");
+
+      if (!list || typeof Tasks === "undefined") return;
+
+      const summary = Tasks.getSummary ? Tasks.getSummary() : {
+        total: Tasks.getPending().length,
+        today: Tasks.getToday().length,
+        critical: 0,
+        overdue: 0
+      };
+
+      if (total) total.textContent = summary.total;
+      if (today) today.textContent = summary.today;
+      if (critical) critical.textContent = (summary.critical || 0) + (summary.overdue || 0);
+
+      const tasks = Tasks.getSorted ? Tasks.getSorted().slice(0, 6) : Tasks.getPending().slice(0, 6);
+
+      if (!tasks.length) {
+        list.innerHTML = '<p class="empty-state">Nenhum compromisso pendente.</p>';
+        return;
+      }
+
+      list.innerHTML = tasks.map(task => {
+        const days = task.daysRemaining;
+        let label = "SEM PRAZO";
+        if (days !== null && days !== undefined) {
+          if (days < 0) label = "ATRASADA " + Math.abs(days) + "d";
+          else if (days === 0) label = "HOJE";
+          else if (days === 1) label = "AMANHÃ";
+          else label = days + " DIAS";
+        }
+
+        const urgency = task.urgency || "normal";
+        const type = String(task.type || "geral").toUpperCase();
+
+        return '<div class="commitment-item urgency-' + escapeHtml(urgency) + '">' +
+          '<div class="commitment-main"><strong>' + escapeHtml(task.title) + '</strong>' +
+          '<small>' + escapeHtml(type) + ' · ' + escapeHtml(label) + '</small></div>' +
+          '<span class="commitment-priority">P' + escapeHtml(task.priority) + '</span></div>';
+      }).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, function(char) {
+        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char];
+      });
     }
 
 
