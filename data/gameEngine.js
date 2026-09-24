@@ -48,6 +48,11 @@ const GameEngine = {
     }
   },
 
+  syncUnifiedCareer() {
+    if (window.UnifiedCareerCore && UnifiedCareerCore.processDay) UnifiedCareerCore.processDay(Game);
+    return Game.state;
+  },
+
   advanceDay() {
 
     if (!Game?.state) return;
