@@ -195,6 +195,35 @@
       this.syncMirrors(G);
     },
 
+    recoverPlayers(G) {
+      const s = this.init(G);
+      s.injuries = Array.isArray(s.injuries) ? s.injuries : [];
+      s.suspensions = Array.isArray(s.suspensions) ? s.suspensions : [];
+      (s.squad || []).forEach(p => {
+        const injury = s.injuries.find(x => String(x.playerId) === String(p.id));
+        if (injury) {
+          injury.days = Math.max(0, Number(injury.days || 0) - 1);
+          if (injury.days <= 0) {
+            p.injured = false;
+            p.condition = Math.max(55, Number(p.condition || 40));
+          }
+        }
+        if (p.suspended) {
+          const cardBan = s.suspensions.find(x => String(x.playerId) === String(p.id));
+          if (cardBan) {
+            cardBan.matches = Math.max(0, Number(cardBan.matches || 0) - (G.state.lastMatchdayProcessed ? 0 : 0));
+          }
+        }
+      });
+      s.injuries = s.injuries.filter(x => Number(x.days || 0) > 0);
+      s.suspensions = s.suspensions.filter(x => {
+        if (Number(x.matches || 0) > 0) return true;
+        const p = (s.squad || []).find(y => String(y.id) === String(x.playerId));
+        if (p) p.suspended = false;
+        return false;
+      });
+    },
+
     monthlyFinance(G) {
       const s = this.init(G);
       const wage = (s.squad || []).reduce((n, p) => n + Number(p.salary || 0), 0);
