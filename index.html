@@ -1401,15 +1401,16 @@
       const feed = document.getElementById("info-feed");
       if (!feed) return;
       document.querySelectorAll(".news-item").forEach(x => x.classList.remove("active"));
-      const items = type === "mail" ? [
-        ["✉️", "Diretoria financeira", "Precisamos revisar o fluxo de caixa e os pagamentos da semana."],
-        ["✉️", "Departamento de futebol", "Relatório do elenco disponível para sua próxima decisão."]
-      ] : [
-        ["📰", "Mercado", "Clubes monitoram jogadores e agentes movimentam o mercado."],
-        ["📰", "Bastidores", "O Conselho acompanha cada movimento da temporada."],
-        ["📰", "Torcida", "A pressão aumenta conforme os resultados aparecem."]
-      ];
+      if (window.Game && Game.ensureInformationCenter) Game.ensureInformationCenter();
+      const source = type === "mail" ? (Game.state.mail || []) : (Game.state.news || []);
+      const items = source.length ? source.slice(0, 4).map(item => [
+        type === "mail" ? "✉️" : "📰",
+        type === "mail" ? item.subject : item.title,
+        item.message
+      ]) : [[type === "mail" ? "✉️" : "📰", "Sem novidades", "O centro de informação será atualizado conforme o calendário avançar."]];
       feed.innerHTML = items.map(item => '<article><span>'+item[0]+'</span><div><strong>'+escapeHtml(item[1])+'</strong><p>'+escapeHtml(item[2])+'</p></div></article>').join("");
+      const source = type === "mail" ? (Game.state.mail || []) : (Game.state.news || []);
+      source.slice(0, 4).forEach(item => item.read = true);
       const active = document.querySelector(type === "mail" ? ".news-item:nth-child(2)" : ".news-item:nth-child(1)");
       if (active) active.classList.add("active");
     }
@@ -1548,6 +1549,7 @@
       updateElectionProgress();
       renderGameplayActions();
       renderCommitments();
+      renderInformationCenter();
 
       renderGameLog();
 
@@ -1623,6 +1625,58 @@
 
     }
 
+
+    function renderInformationCenter() {
+      if (!window.Game) return;
+      if (Game.ensureInformationCenter) Game.ensureInformationCenter();
+
+      const news = Game.state.news || [];
+      const mail = Game.state.mail || [];
+      const decisions = Game.state.decisions || [];
+
+      const newsCount = document.getElementById("news-count");
+      const mailCount = document.getElementById("mail-count");
+      const newsHeadline = document.getElementById("news-headline");
+      const mailHeadline = document.getElementById("mail-headline");
+      const feed = document.getElementById("info-feed");
+
+      if (newsCount) newsCount.textContent = news.filter(x => !x.read).length;
+      if (mailCount) mailCount.textContent = mail.filter(x => !x.read).length;
+      if (newsHeadline) newsHeadline.textContent = news[0]?.title || "Nenhuma notícia nova";
+      if (mailHeadline) mailHeadline.textContent = mail[0]?.subject || "Nenhuma mensagem nova";
+
+      const mode = document.querySelector(".news-item.active")?.textContent?.toLowerCase().includes("correio") ? "mail" : "news";
+      const items = mode === "mail" ? mail.slice(0, 4) : news.slice(0, 4);
+
+      if (feed) {
+        feed.innerHTML = items.length ? items.map(item => {
+          const title = mode === "mail" ? item.subject : item.title;
+          const body = item.message;
+          return '<article class="' + (item.read ? '' : 'unread') + '"><span>' + (mode === "mail" ? '✉️' : '📰') + '</span><div><strong>' + escapeHtml(title) + '</strong><small>' + escapeHtml(item.category || item.department || "CLUBE") + ' · ' + escapeHtml(item.date) + '</small><p>' + escapeHtml(body) + '</p></div></article>';
+        }).join("") : '<p class="empty-state">Nenhuma atualização por enquanto.</p>';
+      }
+
+      const actionBox = document.getElementById("gameplay-actions");
+      if (actionBox && decisions.length) {
+        const decision = decisions[0];
+        actionBox.innerHTML = '<div class="decision-card"><strong>DECISÃO PENDENTE</strong><h4>' + escapeHtml(decision.title) + '</h4><p>' + escapeHtml(decision.description) + '</p>' +
+          decision.options.map(option => '<button class="gameplay-action decision-option" data-decision="' + escapeHtml(decision.id) + '" data-option="' + escapeHtml(option.id) + '"><span><strong>' + escapeHtml(option.text) + '</strong><small>Aplicar consequência no clube</small></span><b>›</b></button>').join("") + '</div>';
+
+        actionBox.querySelectorAll(".decision-option").forEach(button => {
+          button.addEventListener("click", function() {
+            const d = Game.state.decisions.find(x => x.id === this.dataset.decision);
+            const option = d?.options?.find(x => x.id === this.dataset.option);
+            if (!d || !option) return;
+            Object.entries(option.effects || {}).forEach(([key, value]) => Game.change(key, value));
+            d.resolved = true;
+            Game.state.decisions = Game.state.decisions.filter(x => x.id !== d.id);
+            Game.addNews("Decisão executada", option.text + " — os indicadores do clube foram atualizados.", "DIRETORIA");
+            Game.log("📌 Decisão: " + option.text + ".");
+            updateDashboard();
+          });
+        });
+      }
+    }
 
     function renderGameplayActions() {
       const container = document.getElementById("gameplay-actions");
