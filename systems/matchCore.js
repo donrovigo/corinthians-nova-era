@@ -147,10 +147,18 @@ const M={
   var steps=Math.max(1,Number(n)||5);
   for(var i=0;i<steps&&m.minute<90;i++){m.minute++;this.minute(G);}
   if(m.minute>=90){
-   m.active=false;
    m.final=true;
    var fixture=(G.state.matches||[]).find(function(x){return String(x.id)===String(m.fixtureId);});
    if(fixture){fixture.homeScore=m.score.home;fixture.awayScore=m.score.away;fixture.status="completed";fixture.played=true;fixture.playerRatings=Object.assign({},m.playerRatings);}
+   (G.state.suspensions||[]).forEach(function(ban){
+    ban.matches=Math.max(0,Number(ban.matches||0)-1);
+    if(ban.matches===0){
+     var player=(G.state.squad||[]).find(function(p){return String(p.id)===String(ban.playerId);});
+     if(player)player.suspended=false;
+    }
+   });
+   G.state.suspensions=(G.state.suspensions||[]).filter(function(ban){return Number(ban.matches||0)>0;});
+   G.state.lastMatchdayProcessed=m.fixtureId;
    G.finishMatchday();
   }
   return true;
