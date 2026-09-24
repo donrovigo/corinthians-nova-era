@@ -1863,6 +1863,8 @@
           renderGameplayActions();
         }
       }
+    }
+
     function renderGameplayActions() {
       const container = document.getElementById("gameplay-actions");
       if (!container || typeof Gameplay === "undefined") return;
@@ -1986,12 +1988,42 @@
     }
 
 
+    function bindHomeInteractions() {
+      const home = document.getElementById("home-screen");
+      if (!home) return;
+
+      home.querySelectorAll(".career-card").forEach(card => {
+        card.addEventListener("click", function(event) {
+          if (event.target.closest("button")) return;
+          const button = this.querySelector("button");
+          if (button) {
+            this.classList.add("selected");
+            button.focus();
+          }
+        });
+      });
+
+      home.querySelectorAll(".career-card button").forEach(button => {
+        button.type = "button";
+        button.addEventListener("click", function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          const action = this.getAttribute("onclick");
+          if (!action) return;
+          try {
+            Function(action)();
+          } catch (error) {
+            console.error("Erro ao iniciar carreira:", error);
+          }
+        });
+      });
+    }
+
     document.addEventListener(
       "DOMContentLoaded",
       () => {
-
+        bindHomeInteractions();
         updateDashboard();
-
       }
     );
 
