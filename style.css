@@ -503,3 +503,21 @@ h1 {
   border-color: #777;
   color: #fff;
 }
+
+
+/* Termômetros institucionais */
+.commitment-summary div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 110px;
+}
+.commitment-summary div strong {
+  font-size: 1.35rem;
+}
+.commitment-summary div span {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  opacity: .7;
+}
