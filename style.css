@@ -411,3 +411,71 @@ h1 {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+
+/* =========================================================
+   CENTRAL DE DECISÕES
+   ========================================================= */
+
+.gameplay-panel {
+  margin-top: 18px;
+}
+
+.gameplay-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.gameplay-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  padding: 12px 13px;
+  border: 1px solid #282828;
+  border-radius: 7px;
+  background: #151515;
+  color: #eee;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.gameplay-action:hover {
+  background: #1b1b1b;
+  border-color: #666;
+  transform: translateY(-1px);
+}
+
+.gameplay-action span {
+  min-width: 0;
+}
+
+.gameplay-action strong,
+.gameplay-action small {
+  display: block;
+}
+
+.gameplay-action strong {
+  font-size: 12px;
+}
+
+.gameplay-action small {
+  color: #777;
+  font-size: 9px;
+  margin-top: 4px;
+}
+
+.gameplay-action b {
+  color: #777;
+  font-size: 18px;
+}
+
+@media (max-width: 650px) {
+  .gameplay-actions {
+    grid-template-columns: 1fr;
+  }
+}
