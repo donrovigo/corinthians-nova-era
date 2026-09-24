@@ -184,6 +184,34 @@ const Gameplay = {
     return { success: true };
   },
 
+  resolveTask(taskId) {
+    if (typeof Tasks === "undefined" || !Tasks.get) return { success: false };
+
+    const task = Tasks.get(taskId);
+    if (!task) return { success: false, message: "Compromisso não encontrado." };
+
+    if (task.type === "politica") {
+      Game.change("councilTrust", 2);
+      Game.change("politicalSupport", 1);
+    } else if (task.type === "financeiro") {
+      Game.change("reputation", 1);
+      Game.change("pressPressure", -1);
+    } else if (task.type === "mercado") {
+      Game.change("coachConfidence", 1);
+    } else if (task.type === "contrato") {
+      Game.change("dressingRoomMorale", 2);
+    } else if (task.type === "futebol") {
+      Game.change("fanMood", 1);
+      Game.change("coachConfidence", 2);
+    } else if (task.type === "base") {
+      Game.change("reputation", 1);
+    }
+
+    const result = Tasks.complete(taskId, "Decisão executada pelo gestor.");
+    Game.log("✅ Decisão concluída: " + task.title + ".");
+    return result;
+  },
+
   advanceWeek() {
     if (!Game?.advanceDays) return;
     Game.advanceDays(7);
