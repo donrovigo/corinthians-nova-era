@@ -70,6 +70,7 @@ const GameEngine = {
       if (window.CareerCore) CareerCore.tick(Game);
       if (window.CompetitionCore) CompetitionCore.onDay(Game);
       if (window.SquadCore) SquadCore.tick(Game);
+      if (window.StaffCore) StaffCore.tick(Game);
       if (typeof Game !== "undefined" && Game.processInformationCenter) Game.processInformationCenter();
       this.checkTasks();
       this.checkRandomEvent();
