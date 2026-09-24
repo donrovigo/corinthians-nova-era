@@ -808,3 +808,14 @@ html, body, #app, #game-screen.active { overflow: hidden !important; }
   #game-screen .game-layout { overflow: hidden !important; }
   #game-screen .main-panel { overflow: hidden !important; }
 }
+
+#season-status { min-height: 28px; margin: 4px 0 6px; }
+.season-mini { display:flex; align-items:center; gap:10px; min-height:28px; padding:5px 9px; border:1px solid var(--border); background:#0e0e0e; border-radius:6px; font-size:10px; color:#aaa; }
+.season-mini strong { color:#eee; letter-spacing:.7px; margin-right:auto; }
+.season-mini span { padding:3px 6px; border:1px solid #252525; border-radius:4px; }
+.season-mini b { color:#ddd; font-size:9px; letter-spacing:.5px; }
+.decision-card { padding:8px; border:1px solid #333; background:#121212; border-radius:7px; }
+.decision-card > strong { font-size:9px; letter-spacing:1.2px; color:#aaa; }
+.decision-card h4 { margin:4px 0; font-size:13px; }
+.decision-card p { color:#999; font-size:10px; line-height:1.35; margin-bottom:6px; }
+.decision-option { width:100%; margin-top:4px; text-align:left; }
