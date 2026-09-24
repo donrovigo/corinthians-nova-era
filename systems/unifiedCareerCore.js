@@ -273,18 +273,36 @@
 
     startNewSeason(G) {
       const s = this.init(G);
+      s.seasonHistory = Array.isArray(s.seasonHistory) ? s.seasonHistory : [];
+
+      if (s.seasonReview) {
+        s.seasonHistory.unshift(Object.assign({}, s.seasonReview, {
+          savedAt: new Date(G.state.date).toISOString()
+        }));
+        s.seasonHistory = s.seasonHistory.slice(0, 12);
+      }
+
       s.season = Number(s.season || 2026) + 1;
       s.seasonReview = null;
       s.seasonStats = { matches:0,wins:0,draws:0,losses:0,goalsFor:0,goalsAgainst:0,trophies:[],objectiveProgress:0 };
       s.lastUnifiedDay = null;
+      s._economyLastDay = null;
       s.matches = [];
       s.results = [];
       s.standings = {points:0,played:0,wins:0,draws:0,losses:0,gf:0,ga:0};
       s.officialFixtures = [];
       s._registeredResults = {};
       s.simulatedRounds = {};
+      s._simulatedFixtures = {};
+      s.competition = s.competition || {};
+      s.competition.current = null;
+      s.competitions = {};
+      s.competitionTables = {};
+      s.leagueTables = {};
       if (window.CompetitionCore) CompetitionCore.init(G);
-      G.addNews("🗓️ Nova temporada", "A temporada " + s.season + " foi iniciada. O planejamento do elenco e da comissão foi renovado.", "TEMPORADA");
+
+      G.addNews("🗓️ Nova temporada", "A temporada " + s.season + " começou. O histórico anterior foi arquivado e as competições foram reiniciadas.", "TEMPORADA");
+      G.addMail("Diretoria", "Planejamento da nova temporada", "O calendário, as tabelas e os objetivos da temporada " + s.season + " estão prontos para novo ciclo.", "TEMPORADA");
       this.syncMirrors(G);
       return s.season;
     },
