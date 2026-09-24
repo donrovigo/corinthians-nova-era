@@ -829,3 +829,14 @@ html, body, #app, #game-screen.active { overflow: hidden !important; }
 .manager-hub-grid button { grid-column:1/-1; min-height:22px; padding:3px 6px; font-size:9px; }
 @media(max-width:1100px){.manager-hub-grid{grid-template-columns:1fr 1fr}.manager-hub-grid section:last-child{display:none}}
 @media(max-width:850px){#manager-hub{overflow:auto;max-height:130px}.manager-hub-grid{grid-template-columns:1fr}}
+
+#matchday-hub{margin:4px 0 6px}
+.matchday-empty,.matchday-head{border:1px solid var(--border);background:#0e0e0e;border-radius:6px;padding:7px 9px}
+.matchday-empty{display:flex;justify-content:space-between;font-size:10px;color:#999}
+.matchday-head{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.matchday-head strong{font-size:15px}
+.matchday-stats{padding:5px 8px;font-size:9px;color:#999;border:1px solid var(--border);border-top:0}
+.matchday-actions{display:flex;gap:5px;padding:5px 0}
+.matchday-actions .gameplay-action{flex:1;min-height:23px;font-size:9px}
+.matchday-events{max-height:56px;overflow:hidden;border:1px solid var(--border);border-radius:5px;padding:3px 7px;font-size:9px}
+.matchday-events div{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)}
