@@ -912,12 +912,35 @@ html, body, #app, #game-screen.active { overflow: hidden !important; }
   z-index: 50;
   pointer-events: auto !important;
 }
-#game-screen .choice-button {
+#choices-container {
+  position: relative;
+  z-index: 1000;
+  pointer-events: auto !important;
+}
+
+#choices-container .choice-button {
+  position: relative;
+  z-index: 1001;
+  display: block;
+  width: 100%;
   cursor: pointer;
+  pointer-events: auto !important;
+  user-select: none;
+  touch-action: manipulation;
   color: #f4f4f4;
   background: #181818;
   border: 1px solid #3a3a3a;
   border-radius: 7px;
+}
+
+#choices-container .choice-button:disabled {
+  cursor: wait;
+  opacity: .72;
+}
+
+#choices-container .choice-button:hover {
+  border-color: #888;
+  background: #202020;
 }
 #game-screen .choice-button:hover { border-color: #888; background: #202020; }
 .information-modal {
