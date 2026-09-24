@@ -123,9 +123,15 @@ window.CompetitionCore={
 
   getSortedBrasileirao:function(G){
     var table=this.ensureBrasileiraoTable(G);
-    return Object.values(table).sort(function(a,b){
+    var sorted=Object.values(table).sort(function(a,b){
       return b.points-a.points || (b.gf-b.ga)-(a.gf-a.ga) || b.gf-a.gf || a.team.localeCompare(b.team);
     });
+    sorted.forEach(function(t,i){ t.position=i+1; t.goalDifference=t.gf-t.ga; });
+    var s=G.state;
+    if(s.competitions && s.competitions.brasileirao){
+      s.competitions.brasileirao.position=(table.Corinthians&&table.Corinthians.position)||0;
+    }
+    return sorted;
   },
 
   rebuildTables:function(G){
