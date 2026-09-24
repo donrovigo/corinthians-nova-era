@@ -616,39 +616,32 @@
           </div>
 
 
-          <!-- CENTRAL DE DECISÕES -->
-          <div class="panel-card gameplay-panel">
+          <!-- CENTRAL DE NOTÍCIAS / CORREIO -->
+          <div class="panel-card news-mail-panel">
             <div class="panel-heading-row">
               <div>
-                <span class="eyebrow">CENTRAL DE DECISÕES</span>
-                <h3>O que você quer fazer?</h3>
+                <span class="eyebrow">CENTRAL DE INFORMAÇÃO</span>
+                <h3>Notícias & Correio</h3>
               </div>
+              <div class="inbox-badges"><span id="news-count">3</span><span id="mail-count">2</span></div>
+            </div>
+            <div class="news-mail-grid">
+              <button class="news-item active" type="button" onclick="openInfoFeed('news')"><span>📰</span><div><strong>Notícias</strong><small id="news-headline">Mercado, futebol e bastidores</small></div><b>›</b></button>
+              <button class="news-item" type="button" onclick="openInfoFeed('mail')"><span>✉️</span><div><strong>Correio</strong><small id="mail-headline">Mensagens importantes</small></div><b>›</b></button>
+            </div>
+            <div id="info-feed" class="info-feed"></div>
+          </div>
+
+          <!-- CENTRAL DE AÇÕES -->
+          <div class="panel-card gameplay-panel">
+            <div class="panel-heading-row">
+              <div><span class="eyebrow">AÇÕES</span><h3>Próximo passo</h3></div>
             </div>
             <div id="gameplay-actions" class="gameplay-actions"></div>
           </div>
 
-
-          <!-- CENTRAL DE COMPROMISSOS -->
-          <div class="panel-card commitments-panel">
-            <div class="panel-heading-row">
-              <div>
-                <span class="eyebrow">CENTRAL DE COMPROMISSOS</span>
-                <h3>Agenda da gestão</h3>
-              </div>
-              <button class="mini-button" onclick="renderCommitments()">ATUALIZAR</button>
-            </div>
-            <div class="commitment-summary">
-              <span><strong id="tasks-critical">0</strong> críticas</span>
-              <span><strong id="tasks-today">0</strong> hoje</span>
-              <span><strong id="tasks-total">0</strong> pendentes</span>
-            </div>
-            <div id="commitments-list" class="commitments-list">
-              <p class="empty-state">Nenhum compromisso pendente.</p>
-            </div>
-          </div>
-
-
           <!-- LOG -->
+
 
           <div class="panel-card">
 
@@ -895,7 +888,7 @@
         return;
       }
 
-      Game.start("president");
+      Game.start("presidente");
 
       showScreen("game-screen");
 
@@ -1383,12 +1376,55 @@
     }
 
 
+    function updateManagementAccess() {
+      const state = window.Game && Game.state ? Game.state : null;
+      if (!state) return;
+      const presidential = state.career === "presidente";
+      const won = state.election && state.election.won === true;
+      const tabs = document.querySelectorAll(".department-tab");
+      tabs.forEach(tab => {
+        const text = (tab.textContent || "").trim().toUpperCase();
+        const isOverview = text === "VISÃO GERAL";
+        const isPolitics = text === "POLÍTICA";
+        const locked = presidential && !won && !isOverview && !isPolitics;
+        tab.disabled = locked;
+        tab.classList.toggle("locked", locked);
+        if (locked) tab.title = "Disponível somente após vencer a eleição presidencial.";
+      });
+      const title = document.getElementById("game-career-title");
+      if (title && presidential) title.textContent = won ? "Presidência" : (state.election.won === false ? "Oposição" : "Pré-campanha");
+      const shell = document.querySelector(".department-shell");
+      if (shell) shell.classList.toggle("management-locked", presidential && !won);
+    }
+
+    function openInfoFeed(type) {
+      const feed = document.getElementById("info-feed");
+      if (!feed) return;
+      document.querySelectorAll(".news-item").forEach(x => x.classList.remove("active"));
+      const items = type === "mail" ? [
+        ["✉️", "Diretoria financeira", "Precisamos revisar o fluxo de caixa e os pagamentos da semana."],
+        ["✉️", "Departamento de futebol", "Relatório do elenco disponível para sua próxima decisão."]
+      ] : [
+        ["📰", "Mercado", "Clubes monitoram jogadores e agentes movimentam o mercado."],
+        ["📰", "Bastidores", "O Conselho acompanha cada movimento da temporada."],
+        ["📰", "Torcida", "A pressão aumenta conforme os resultados aparecem."]
+      ];
+      feed.innerHTML = items.map(item => '<article><span>'+item[0]+'</span><div><strong>'+escapeHtml(item[1])+'</strong><p>'+escapeHtml(item[2])+'</p></div></article>').join("");
+      const active = document.querySelector(type === "mail" ? ".news-item:nth-child(2)" : ".news-item:nth-child(1)");
+      if (active) active.classList.add("active");
+    }
+
     function updateDashboard() {
 
       if (!window.Game) return;
 
       const state = Game.state;
 
+      updateManagementAccess();
+      if (typeof openInfoFeed === "function" && !document.getElementById("info-feed")?.dataset.ready) {
+        openInfoFeed("news");
+        const feed = document.getElementById("info-feed"); if (feed) feed.dataset.ready = "1";
+      }
 
       const money =
         document.getElementById("money");
