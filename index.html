@@ -1655,15 +1655,45 @@
     function renderManagerHub() {
       if (!window.Game) return;
       Game.ensureManagerModel?.();
-      const t = Game.state.tactics;
-      const rec = Game.state.recruitment;
+      const s = Game.state;
+      const t = s.tactics;
+      const rec = s.recruitment || {focuses:[]};
+      const training = s.training || {focus:"equilibrado",intensity:55};
+      const strength = window.UnifiedCareerCore ? UnifiedCareerCore.teamStrength(Game) : 70;
+      const next = (s.matches || []).find(m => !m.played);
       const el = document.getElementById("manager-hub");
       if (!el) return;
-      el.innerHTML = '<div class="manager-hub-grid">' +
-        '<section><b>🧠 TÁTICA</b><strong>COM POSSE</strong><span>' + t.inPossession.formation + ' · Ritmo ' + t.inPossession.tempo + '</span><small>Pressão ' + t.inPossession.pressing + ' · Passe ' + t.inPossession.passing + '</small><strong>SEM POSSE</strong><span>' + t.outOfPossession.formation + ' · Linha ' + t.outOfPossession.line + '</span><small>Pressão ' + t.outOfPossession.press + ' · Compactação ' + t.outOfPossession.compactness + '</small></section>' +
-        '<section><b>🔎 RECRUTAMENTO</b><strong>' + rec.focuses.filter(x => x.active).length + ' FOCO(S) ATIVO(S)</strong><span>Scouting acompanha necessidades do elenco.</span><button class="gameplay-action" onclick="Game.createRecruitmentFocus(\'atacante\',\'titular\',80); updateDashboard();">+ Buscar atacante</button></section>' +
-        '<section><b>👔 COMISSÃO</b><strong>' + (Game.state.manager?.style || "equilibrado").toUpperCase() + '</strong><span>Autoridade ' + (Game.state.manager?.authority || 50) + ' · Relação ' + (Game.state.manager?.relationship || 50) + '</span><button class="gameplay-action" onclick="Game.applyTacticalPlan({style:\'intenso\',inPossession:{tempo:70,pressing:65},outOfPossession:{press:70}}); updateDashboard();">Aplicar plano intenso</button></section>' +
-      '</div>';
+
+      const xi = Object.values(s.lineup || {});
+      const lineupNames = xi.map(id => s.squad?.find(p => String(p.id) === String(id))?.name || id).slice(0,11);
+      const finance = s.finance || {};
+      const board = s.board || {};
+      const fans = s.fans || {};
+      const media = s.media || {};
+
+      el.innerHTML =
+        '<div class="manager-hub-grid">' +
+          '<section><b>🧠 COMISSÃO</b><strong>' + (s.manager?.style || "equilibrado").toUpperCase() + '</strong><span>Força atual: ' + strength + ' · Autoridade ' + (s.manager?.authority || 50) + '</span><small>Relação ' + (s.manager?.relationship || 50) + ' · Staff ' + (s.dynamics?.staffSupport || 60) + '</small>' +
+          '<button class="gameplay-action" onclick="Game.applyTacticalPlan({style:\'intenso\',inPossession:{tempo:70,pressing:65},outOfPossession:{press:70}});updateDashboard()">Plano intenso</button></section>' +
+
+          '<section><b>🏋️ TREINAMENTO</b><strong>' + training.focus.toUpperCase() + ' · ' + training.intensity + '</strong><span>Carga semanal ' + (training.weeklyLoad || 0) + '</span><div class="training-controls"><select id="training-focus"><option value="equilibrado">Equilibrado</option><option value="ataque">Ataque</option><option value="defesa">Defesa</option><option value="fisico">Físico</option><option value="tatico">Tático</option><option value="recuperacao">Recuperação</option><option value="bola_parada">Bola parada</option></select><input id="training-intensity" type="number" min="20" max="90" value="' + training.intensity + '"><button class="gameplay-action" onclick="UnifiedCareerCore.train(Game,document.getElementById(\'training-focus\').value,Number(document.getElementById(\'training-intensity\').value));updateDashboard()">Treinar</button></div></section>' +
+
+          '<section><b>📋 ESCALAÇÃO</b><strong>' + xi.length + '/11 TITULARES</strong><span>' + (lineupNames.length ? lineupNames.join(" · ") : "Nenhum XI definido") + '</span><button class="gameplay-action" onclick="UnifiedCareerCore.autoLineup(Game);updateDashboard()">Escalar melhor XI</button></section>' +
+
+          '<section><b>🏟️ PARTIDA</b><strong>' + (next ? ((next.home || "Corinthians") + " × " + (next.away || next.opponent || "Adversário")) : "Sem partida") + '</strong><span>' + (next ? (next.competition || "Competição") + " · " + next.date : "Aguardando calendário") + '</span><button class="gameplay-action" onclick="UnifiedCareerCore.startNextMatch(Game);updateDashboard()">Preparar e iniciar</button></section>' +
+
+          '<section><b>🔎 MERCADO</b><strong>' + (rec.focuses.filter(x => x.active).length) + ' FOCO(S)</strong><span>' + (s.market?.offers?.length || 0) + ' propostas · ' + (s.market?.completed?.length || 0) + ' operações concluídas</span><button class="gameplay-action" onclick="Game.createRecruitmentFocus(\'atacante\',\'titular\',80);updateDashboard()">Buscar atacante</button></section>' +
+
+          '<section><b>📝 CONTRATOS</b><strong>' + (s.contracts?.expiring?.length || 0) + ' VENCENDO</strong><span>Janela de 180 dias · renovações: ' + (s.contracts?.renewals?.length || 0) + '</span><button class="gameplay-action" onclick="updateDashboard()">Revisar contratos</button></section>' +
+
+          '<section><b>💰 FINANÇAS</b><strong>CAIXA R$ ' + Number(s.club?.cash || 0).toLocaleString("pt-BR") + '</strong><span>Receita mês R$ ' + Number(finance.monthlyRevenue || 0).toLocaleString("pt-BR") + ' · folha R$ ' + Number(finance.wageBill || 0).toLocaleString("pt-BR") + '</span><small>Dívida R$ ' + Number(s.club?.debt || 0).toLocaleString("pt-BR") + '</small></section>' +
+
+          '<section><b>🏛️ DIRETORIA</b><strong>CONFIANÇA ' + Math.round(board.confidence || 0) + '</strong><span>Paciencia ' + Math.round(board.patience || 0) + ' · objetivo esportivo em acompanhamento</span></section>' +
+
+          '<section><b>📣 TORCIDA / IMPRENSA</b><strong>TORCIDA ' + Math.round(fans.mood || 0) + ' · IMPRENSA ' + Math.round(media.pressure || 0) + '</strong><span>Pressão negativa ' + Math.round(media.negative || 0) + ' · presença ' + Math.round(fans.attendance || 0) + '</span></section>' +
+
+          '<section><b>🔒 REGISTRO</b><strong>' + (s.club?.transferBan ? "TRANSFER BAN ATIVO" : "REGISTRO LIBERADO") + '</strong><span>Dívida de registro R$ ' + Number(s.transferMarket?.transferBanDebt || 0).toLocaleString("pt-BR") + '</span>' + (s.club?.transferBan ? '<button class="gameplay-action" onclick="UnifiedCareerCore.settleTransferBan(Game);updateDashboard()">Quitar bloqueio</button>' : '') + '</section>' +
+        '</div>';
     }
 
     function renderSeasonStatus() {
