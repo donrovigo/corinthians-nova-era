@@ -35,6 +35,7 @@
 <script src="data/gameEngine.js" defer></script>
 <script src="data/gameplay.js" defer></script>
 <script src="data/narrative.js" defer></script>
+<script src="data/departments.js" defer></script>
 
 <!-- ============================= -->
 <!-- MOTOR PRINCIPAL                -->
@@ -424,6 +425,73 @@
       </section>
 
 
+      <!-- CENTRAL DE GESTÃO POR DEPARTAMENTO -->
+      <section class="department-shell">
+        <div class="department-tabs">
+          <button class="department-tab active" onclick="openDepartmentPanel('overview', this)">VISÃO GERAL</button>
+          <button class="department-tab" onclick="openDepartmentPanel('politica', this)">POLÍTICA</button>
+          <button class="department-tab" onclick="openDepartmentPanel('mercado', this)">MERCADO</button>
+          <button class="department-tab" onclick="openDepartmentPanel('financas', this)">FINANÇAS</button>
+          <button class="department-tab" onclick="openDepartmentPanel('contratos', this)">CONTRATOS</button>
+          <button class="department-tab" onclick="openDepartmentPanel('transferban', this)">TRANSFER BAN</button>
+          <button class="department-tab" onclick="openDepartmentPanel('delegacoes', this)">DELEGAÇÕES</button>
+          <button class="department-tab" onclick="openDepartmentPanel('alinhamento', this)">ALINHAMENTO</button>
+        </div>
+
+        <div id="department-overview" class="department-panel active">
+          <span class="eyebrow">CENTRO DE COMANDO</span>
+          <h2>Uma gestão, vários departamentos</h2>
+          <p>Você não toma decisões isoladas. Futebol, financeiro, marketing, jurídico, política, base e comunicação precisam conversar antes que um problema vire crise.</p>
+          <div class="department-grid" id="department-overview-grid"></div>
+        </div>
+
+        <div id="department-politica" class="department-panel">
+          <span class="eyebrow">POLÍTICA / CONSELHO</span>
+          <h2>Ambiente institucional</h2>
+          <div class="department-metrics" id="politics-department-metrics"></div>
+          <div class="department-grid" id="politics-department-list"></div>
+        </div>
+
+        <div id="department-mercado" class="department-panel">
+          <span class="eyebrow">MERCADO</span>
+          <h2>Mercado e elenco</h2>
+          <div class="department-grid" id="market-department-list"></div>
+        </div>
+
+        <div id="department-financas" class="department-panel">
+          <span class="eyebrow">FINANÇAS</span>
+          <h2>Sala financeira</h2>
+          <div class="department-metrics" id="finance-department-metrics"></div>
+          <div class="department-grid" id="finance-department-list"></div>
+        </div>
+
+        <div id="department-contratos" class="department-panel">
+          <span class="eyebrow">CONTRATOS</span>
+          <h2>Renovações e vencimentos</h2>
+          <div class="department-grid" id="contracts-department-list"></div>
+        </div>
+
+        <div id="department-transferban" class="department-panel">
+          <span class="eyebrow">TRANSFER BAN</span>
+          <h2>Bloqueios de registro</h2>
+          <div id="transferban-department-list"></div>
+        </div>
+
+        <div id="department-delegacoes" class="department-panel">
+          <span class="eyebrow">DELEGAÇÕES</span>
+          <h2>Missões que você entregou a terceiros</h2>
+          <div id="delegations-department-list"></div>
+        </div>
+
+        <div id="department-alinhamento" class="department-panel">
+          <span class="eyebrow">REUNIÃO DE DIRETORIA</span>
+          <h2>Alinhar todos os departamentos</h2>
+          <p>Use esta tela como uma agenda viva. Reúna cada área, receba alertas e mantenha as decisões conectadas.</p>
+          <div class="department-grid" id="alignment-department-list"></div>
+          <div class="meeting-history" id="alignment-history"></div>
+        </div>
+      </section>
+
       <!-- CONTEÚDO PRINCIPAL -->
 
       <div class="game-layout">
@@ -620,6 +688,134 @@
 
   <script>
 
+    function openDepartmentPanel(id, button) {
+      document.querySelectorAll(".department-panel").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".department-tab").forEach(b => b.classList.remove("active"));
+      const target = document.getElementById("department-" + id);
+      if (target) target.classList.add("active");
+      if (button) button.classList.add("active");
+      renderDepartmentCenter(id);
+    }
+
+    function departmentAction(id, action) {
+      if (typeof DepartmentHub === "undefined") return;
+      let result = null;
+      if (action === "align") result = DepartmentHub.align(id);
+      if (action === "follow") result = DepartmentHub.createFollowUp(id, "pontos pendentes");
+      if (result && result.success === false) {
+        setEvent("Departamento", result.message || "Não foi possível realizar o alinhamento.", []);
+      }
+      renderDepartmentCenter("alinhamento");
+      updateDashboard();
+      renderCommitments();
+      renderGameLog();
+    }
+
+    function renderDepartmentCenter(activeId) {
+      if (typeof DepartmentHub === "undefined") return;
+      const esc = typeof escapeHtml === "function" ? escapeHtml : (v => String(v));
+      const grid = document.getElementById("department-overview-grid");
+      if (grid) grid.innerHTML = DepartmentHub.departments.map(d => `
+        <article class="department-card">
+          <div class="department-card-icon">${d.icon}</div>
+          <div><strong>${esc(d.name)}</strong><p>${esc(d.description)}</p></div>
+          <button class="mini-button" onclick="openDepartmentPanel('alinhamento'); departmentAction('${d.id}','align')">ALINHAR</button>
+        </article>`).join("");
+
+      const alignment = document.getElementById("alignment-department-list");
+      if (alignment) alignment.innerHTML = DepartmentHub.departments.map(d => `
+        <article class="department-card">
+          <div class="department-card-icon">${d.icon}</div>
+          <div><strong>${esc(d.name)}</strong><p>${esc(d.description)}</p></div>
+          <div class="department-card-actions">
+            <button class="mini-button" onclick="departmentAction('${d.id}','align')">CONVERSAR</button>
+            <button class="mini-button" onclick="departmentAction('${d.id}','follow')">CRIAR RETORNO</button>
+          </div>
+        </article>`).join("");
+
+      const history = document.getElementById("alignment-history");
+      if (history) {
+        const meetings=DepartmentHub.getMeetings();
+        history.innerHTML = '<span class="eyebrow">ÚLTIMOS ALINHAMENTOS</span>' +
+          (meetings.length ? meetings.slice(0,8).map(m => {
+            const d=DepartmentHub.get(m.department);
+            return `<div class="meeting-row"><span>${d ? d.icon : "•"} ${esc(d ? d.name : m.department)}</span><small>${new Date(m.date).toLocaleDateString("pt-BR")}</small></div>`;
+          }).join("") : '<p class="empty-state">Nenhuma reunião registrada nesta carreira.</p>');
+      }
+
+      renderDepartmentMetrics();
+      renderMarketDepartment();
+      renderFinanceDepartment();
+      renderContractsDepartment();
+      renderTransferBanDepartment();
+      renderDelegationsDepartment();
+      renderPoliticsDepartment();
+    }
+
+    function renderDepartmentMetrics() {
+      const s=window.Game && Game.state ? Game.state : null;
+      const el=document.getElementById("politics-department-metrics");
+      if(el && s) el.innerHTML=`
+        <div><strong>${s.councilMood ?? s.councilTrust ?? 0}</strong><span>Humor do Conselho</span></div>
+        <div><strong>${s.councilTrust ?? 0}</strong><span>Confiança</span></div>
+        <div><strong>${s.politicalSupport ?? 0}</strong><span>Apoio político</span></div>
+        <div><strong>${s.leakRisk ?? 0}</strong><span>Risco de vazamento</span></div>`;
+    }
+
+    function renderMarketDepartment() {
+      const el=document.getElementById("market-department-list"); if(!el) return;
+      const ban=typeof FINANCE!=="undefined" && FINANCE.getActiveTransferBans ? FINANCE.getActiveTransferBans().length : 0;
+      const offers=typeof PlayerOffers!=="undefined" && PlayerOffers.getPending ? PlayerOffers.getPending().length : 0;
+      const deals=typeof Negotiations!=="undefined" && Array.isArray(Negotiations.active) ? Negotiations.active.length : 0;
+      el.innerHTML=`
+        <article class="department-card"><strong>Janela</strong><p>${typeof TransferMarket!=="undefined" && TransferMarket.isWindowOpen && TransferMarket.isWindowOpen() ? "ABERTA" : "FECHADA"}</p></article>
+        <article class="department-card"><strong>Transfer bans</strong><p>${ban} bloqueio(s) ativo(s)</p><button class="mini-button" onclick="openDepartmentPanel('transferban')">VER BLOQUEIOS</button></article>
+        <article class="department-card"><strong>Ofertas de jogadores</strong><p>${offers} pendente(s)</p></article>
+        <article class="department-card"><strong>Negociações</strong><p>${deals} em andamento</p></article>`;
+    }
+
+    function renderFinanceDepartment() {
+      const el=document.getElementById("finance-department-metrics"); if(!el || typeof FINANCE==="undefined") return;
+      const f=FINANCE.state||{};
+      el.innerHTML=`
+        <div><strong>${formatMoney(f.cash||0)}</strong><span>Caixa</span></div>
+        <div><strong>${formatMoney(f.debt||0)}</strong><span>Dívida</span></div>
+        <div><strong>${formatMoney(f.payroll||0)}</strong><span>Folha</span></div>
+        <div><strong>${formatMoney(f.transferBudget||0)}</strong><span>Orçamento de transferências</span></div>`;
+      const list=document.getElementById("finance-department-list");
+      if(list) list.innerHTML=`
+        <article class="department-card"><strong>Salários pendentes</strong><p>${formatMoney(f.salaryPending||0)}</p></article>
+        <article class="department-card"><strong>Dívida de Transfer Ban</strong><p>${formatMoney(f.transferBanDebt||0)}</p></article>
+        <article class="department-card"><strong>Receita mensal</strong><p>${formatMoney(f.monthlyRevenue||0)}</p></article>
+        <article class="department-card"><strong>Despesa mensal</strong><p>${formatMoney(f.monthlyExpenses||0)}</p></article>`;
+    }
+
+    function renderContractsDepartment() {
+      const el=document.getElementById("contracts-department-list"); if(!el) return;
+      const players=typeof Contracts!=="undefined" && Contracts.getExpiringPlayers ? Contracts.getExpiringPlayers(180) : [];
+      const staff=typeof Contracts!=="undefined" && Contracts.getExpiringStaff ? Contracts.getExpiringStaff(180) : [];
+      const rows=[...players.map(p=>({name:p.name,type:"Jogador",date:p.contractUntil,salary:p.salary})),...staff.map(p=>({name:p.name,type:"Staff",date:p.contractUntil,salary:p.salary}))];
+      el.innerHTML=rows.length ? rows.slice(0,20).map(r=>`<article class="department-card"><div><strong>${escapeHtml(r.name)}</strong><p>${r.type} · vence ${r.date || "sem data"}</p></div><span>${formatMoney(r.salary||0)}/mês</span></article>`).join("") : '<p class="empty-state">Nenhum contrato entrando na janela de 180 dias.</p>';
+    }
+
+    function renderTransferBanDepartment() {
+      const el=document.getElementById("transferban-department-list"); if(!el) return;
+      const bans=typeof FINANCE!=="undefined" && FINANCE.getActiveTransferBans ? FINANCE.getActiveTransferBans() : [];
+      el.innerHTML=bans.length ? bans.map(b=>`<article class="transferban-card"><div><span class="eyebrow">BLOQUEIO ATIVO</span><h3>${escapeHtml(b.reason || b.id || "Transfer Ban")}</h3><p>Valor para resolver: <strong>${formatMoney(b.amount||0)}</strong></p></div><button class="primary-button" onclick="departmentAction('financeiro','align'); Gameplay.settleTransferBan(); renderDepartmentCenter('transferban')">TENTAR QUITAR</button></article>`).join("") : '<div class="empty-state">Nenhum Transfer Ban ativo.</div>';
+    }
+
+    function renderDelegationsDepartment() {
+      const el=document.getElementById("delegations-department-list"); if(!el) return;
+      const active=typeof Delegation!=="undefined" && Array.isArray(Delegation.active) ? Delegation.active : [];
+      el.innerHTML=active.length ? active.map(d=>`<article class="department-card"><strong>${escapeHtml(d.title || d.type || d.id)}</strong><p>Status: ${escapeHtml(d.status || "em andamento")} · progresso ${Number(d.progress||0)}%</p></article>`).join("") : '<p class="empty-state">Nenhuma delegação ativa no momento.</p>';
+    }
+
+    function renderPoliticsDepartment() {
+      const el=document.getElementById("politics-department-list"); if(!el) return;
+      const groups=typeof POLITICS!=="undefined" && Array.isArray(POLITICS.groups) ? POLITICS.groups : [];
+      el.innerHTML=groups.length ? groups.map(g=>`<article class="department-card"><strong>${escapeHtml(g.name || "Grupo")}</strong><p>Influência: ${g.influence ?? "-"} · Apoio: ${g.support ?? "-"}</p></article>`).join("") : '<p class="empty-state">Os grupos políticos aparecerão conforme a carreira avançar.</p>';
+    }
+
     function showScreen(screenId) {
 
       document
@@ -668,6 +864,7 @@
       );
 
       updateDashboard();
+      renderDepartmentCenter("overview");
     }
 
 
@@ -694,6 +891,7 @@
       );
 
       updateDashboard();
+      renderDepartmentCenter("overview");
     }
 
 
