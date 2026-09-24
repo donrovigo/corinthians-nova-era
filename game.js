@@ -55,6 +55,10 @@ const Game = {
     this.state.standings = { points: 0, played: 0, wins: 0, draws: 0, losses: 0, gf: 0, ga: 0 };
     this.state.transferWindow = { open: false, lastChecked: null };
     this.state.lastCalendarDate = null;
+    this.state.manager = { reputation: 50, tacticalKnowledge: 50, authority: 50, relationship: 50, style: "equilibrado" };
+    this.state.tactics = { inPossession: { formation: "4-3-3", width: 55, tempo: 55, passing: 55, pressing: 50 }, outOfPossession: { formation: "4-1-4-1", line: 55, press: 55, compactness: 55 } };
+    this.state.squad = [];
+    this.state.recruitment = { focuses: [], shortlist: [], reports: [] };
 
     this.state.election = {
       candidate: false,
@@ -432,6 +436,43 @@ const Game = {
   formatDate(date = this.state.date) {
     const d = date instanceof Date ? date : new Date(date);
     return d.toISOString().slice(0, 10);
+  },
+
+  ensureManagerModel() {
+    const s = this.state;
+    s.manager = s.manager || {
+      reputation: 50,
+      tacticalKnowledge: 50,
+      authority: 50,
+      relationship: 50,
+      style: "equilibrado"
+    };
+    s.tactics = s.tactics || {
+      inPossession: { formation: "4-3-3", width: 55, tempo: 55, passing: 55, pressing: 50 },
+      outOfPossession: { formation: "4-1-4-1", line: 55, press: 55, compactness: 55 }
+    };
+    s.squad = Array.isArray(s.squad) ? s.squad : [];
+    s.recruitment = s.recruitment || { focuses: [], shortlist: [], reports: [] };
+  },
+
+  applyTacticalPlan(plan = {}) {
+    this.ensureManagerModel();
+    const t = this.state.tactics;
+    if (plan.inPossession) Object.assign(t.inPossession, plan.inPossession);
+    if (plan.outOfPossession) Object.assign(t.outOfPossession, plan.outOfPossession);
+    if (plan.style) this.state.manager.style = plan.style;
+    this.addNews("🧠 Plano tático atualizado", "A equipe recebeu novas orientações com bola e sem bola.", "TÁTICA");
+    this.addMail("Comissão Técnica", "Novo plano de jogo", `Plano ${this.state.manager.style}: ${t.inPossession.formation} com posse / ${t.outOfPossession.formation} sem posse.`, "FUTEBOL");
+    this.change("coachConfidence", 1);
+  },
+
+  createRecruitmentFocus(position, role = "titular", priority = 50) {
+    this.ensureManagerModel();
+    const focus = { id: "focus-" + Date.now(), position, role, priority, created: this.formatDate(), active: true };
+    this.state.recruitment.focuses.push(focus);
+    this.addNews("🔎 Novo foco de recrutamento", `Scouting recebeu uma busca por ${position} (${role}).`, "MERCADO");
+    this.addMail("Chefe de Scouting", "Novo foco de recrutamento", `Vamos procurar ${position} com prioridade ${priority}/100.`, "MERCADO");
+    return focus;
   },
 
   ensureSeasonSystems() {
