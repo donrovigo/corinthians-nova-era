@@ -639,6 +639,7 @@
             </div>
             <div id="season-status"></div>
       <div id="manager-hub"></div>
+      <div id="matchday-hub"></div>
       <div id="gameplay-actions" class="gameplay-actions"></div>
           </div>
 
@@ -1554,6 +1555,7 @@
       renderInformationCenter();
       renderSeasonStatus();
       renderManagerHub();
+      renderMatchdayHub();
 
       renderGameLog();
 
@@ -1629,6 +1631,21 @@
 
     }
 
+
+    function renderMatchdayHub() {
+      const el = document.getElementById("matchday-hub");
+      if (!el || !window.Game) return;
+      Game.ensureMatchEngine?.();
+      const m = Game.state.matchEngine;
+      if (!m?.active) {
+        el.innerHTML = '<div class="matchday-empty"><b>🏟️ MATCHDAY</b><span>Nenhuma partida ao vivo.</span></div>';
+        return;
+      }
+      el.innerHTML = '<div class="matchday-head"><b>🏟️ ' + m.home + ' ' + m.score.home + ' × ' + m.score.away + ' ' + m.away + '</b><strong>' + m.minute + "'</strong></div>" +
+        '<div class="matchday-stats">POSSE ' + m.stats.home.possession + '% — ' + m.stats.away.possession + '% · FINALIZAÇÕES ' + m.stats.home.shots + ' — ' + m.stats.away.shots + ' · xG ' + m.stats.home.xg.toFixed(2) + ' — ' + m.stats.away.xg.toFixed(2) + '</div>' +
+        '<div class="matchday-actions"><button class="gameplay-action" onclick="Game.applyMatchInstruction(\'attacking\');renderMatchdayHub()">ATACAR</button><button class="gameplay-action" onclick="Game.applyMatchInstruction(\'balanced\');renderMatchdayHub()">EQUILIBRAR</button><button class="gameplay-action" onclick="Game.applyMatchInstruction(\'defensive\');renderMatchdayHub()">FECHAR</button><button class="gameplay-action" onclick="Game.simulateMatchMinutes(5);updateDashboard();renderMatchdayHub()">▶ 5 MIN</button></div>' +
+        '<div class="matchday-events">' + (m.events || []).slice(0,5).map(e => '<div><b>' + e.minute + "'</b> " + e.text + '</div>').join('') + '</div>';
+    }
 
     function renderManagerHub() {
       if (!window.Game) return;
