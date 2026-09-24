@@ -16,20 +16,53 @@ window.CompetitionCore={
   },
 
   generateRoundPairings:function(G,round){
-    var teams=window.getBrasileiraoTeams?getBrasileiraoTeams():[];
-    var table=this.ensureBrasileiraoTable(G);
-    var pairs=[];
-    var fixed=(window.getBrasileiraoFixtures?getBrasileiraoFixtures():[]).find(function(x){return x.round===round;});
-    if(!fixed) return pairs;
-    var others=teams.filter(function(t){return t!=="Corinthians" && t!==fixed.opponent;});
-    var used={};
-    used["Corinthians"]=true; used[fixed.opponent]=true;
-    pairs.push({home:fixed.home?"Corinthians":fixed.opponent,away:fixed.home?fixed.opponent:"Corinthians"});
-    while(others.length>=2){
-      var a=others.shift(), b=others.shift();
-      pairs.push({home:a,away:b});
+    var teams=(window.getBrasileiraoTeams?getBrasileiraoTeams():[]).slice();
+    if(teams.length!==20) return [];
+
+    // Calendário circular de 20 clubes: 19 rodadas no turno + 19 no returno.
+    var base=teams.slice();
+    var rounds=[];
+    for(var r=0;r<19;r++){
+      var pairs=[];
+      for(var i=0;i<10;i++){
+        var a=base[i], b=base[19-i];
+        var home=(r%2===0)?a:b;
+        var away=(r%2===0)?b:a;
+        pairs.push({home:home,away:away});
+      }
+      rounds.push(pairs);
+      base=[base[0]].concat(base.slice(-1),base.slice(1,-1));
     }
-    return pairs;
+
+    var pairings=rounds[(Number(round)||1)-1];
+    if(!pairings) pairings=rounds[0];
+    else if(Number(round)>19){
+      pairings=pairings.map(function(p){return {home:p.away,away:p.home};});
+    } else {
+      pairings=pairings.map(function(p){return {home:p.home,away:p.away};});
+    }
+
+    // Quando o arquivo de competições traz um jogo oficial do Corinthians,
+    // preservamos esse adversário e ajustamos apenas os dois confrontos afetados.
+    var fixed=(window.getBrasileiraoFixtures?getBrasileiraoFixtures():[]).find(function(x){
+      return Number(x.round)===Number(round);
+    });
+    if(fixed && fixed.opponent){
+      var cor=pairings.findIndex(function(p){return p.home==="Corinthians"||p.away==="Corinthians";});
+      var target=pairings.findIndex(function(p){return p.home===fixed.opponent||p.away===fixed.opponent;});
+      if(cor>=0 && target>=0 && cor!==target){
+        var currentOpponent=pairings[cor].home==="Corinthians"?pairings[cor].away:pairings[cor].home;
+        var targetOpponent=pairings[target].home===fixed.opponent?pairings[target].away:pairings[target].home;
+        pairings[cor]=fixed.home
+          ? {home:"Corinthians",away:fixed.opponent}
+          : {home:fixed.opponent,away:"Corinthians"};
+        if(pairings[target].home===fixed.opponent) pairings[target]={home:fixed.opponent,away:currentOpponent};
+        else pairings[target]={home:currentOpponent,away:fixed.opponent};
+        // Evita que a mesma partida apareça duas vezes no mesmo round.
+        if(targetOpponent==="Corinthians") pairings[target]={home:currentOpponent,away:fixed.opponent};
+      }
+    }
+    return pairings;
   },
 
   simulateScore:function(home,away,round){
@@ -81,6 +114,10 @@ window.CompetitionCore={
         s.matches.push(f); s.officialFixtures.push(id);
         if(G.addNews) G.addNews("Calendário oficial", "Corinthians x "+m.opponent+" em "+m.date+" ("+f.competition+").", "CALENDÁRIO");
       }
+    });
+    var leagueDates=(window.getBrasileiraoFixtures?getBrasileiraoFixtures():[]).filter(function(m){return m.date===d;});
+    leagueDates.forEach(function(m){
+      if(m.round!==undefined) CompetitionCore.simulateOtherLeagueMatches(G,m.round,d);
     });
     this.rebuildTables(G);
   },
