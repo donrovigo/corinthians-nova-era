@@ -742,17 +742,42 @@
     }
 
     function departmentAction(id, action) {
-      if (typeof DepartmentHub === "undefined") return;
-      let result = null;
-      if (action === "align") result = DepartmentHub.align(id);
-      if (action === "follow") result = DepartmentHub.createFollowUp(id, "pontos pendentes");
-      if (result && result.success === false) {
-        setEvent("Departamento", result.message || "Não foi possível realizar o alinhamento.", []);
+      if (typeof DepartmentHub === "undefined") {
+        setEvent("Departamento indisponível", "O módulo de departamentos ainda não foi carregado.", [
+          { text: "VOLTAR", action: () => updateDashboard() }
+        ]);
+        return;
       }
-      renderDepartmentCenter("alinhamento");
-      updateDashboard();
-      renderCommitments();
-      renderGameLog();
+
+      if (action === "align") {
+        departmentConversation(id);
+        return;
+      }
+
+      if (action === "follow") {
+        const department = DepartmentHub.get(id);
+        const result = DepartmentHub.createFollowUp(id, "pontos pendentes");
+
+        if (!result) {
+          setEvent("Retorno não criado", "Não foi possível registrar o acompanhamento deste departamento.", [
+            { text: "VOLTAR AO PAINEL", action: () => updateDashboard() }
+          ]);
+          return;
+        }
+
+        Game.log("📅 Retorno criado para " + (department ? department.name : id) + ".");
+        setEvent("Retorno agendado", "O acompanhamento foi registrado na agenda. Você receberá a pauta novamente conforme a carreira avançar.", [
+          { text: "CONTINUAR", action: () => updateDashboard() },
+          { text: "VER ALINHAMENTOS", action: () => {
+            openDepartmentPanel("alinhamento");
+            renderDepartmentCenter("alinhamento");
+          }}
+        ]);
+        renderDepartmentCenter("alinhamento");
+        updateDashboard();
+        renderCommitments();
+        renderGameLog();
+      }
     }
 
     function renderDepartmentCenter(activeId) {
@@ -763,7 +788,7 @@
         <article class="department-card">
           <div class="department-card-icon">${d.icon}</div>
           <div><strong>${esc(d.name)}</strong><p>${esc(d.description)}</p></div>
-          <button class="mini-button" onclick="openDepartmentPanel('alinhamento'); departmentAction('${d.id}','align')">ALINHAR</button>
+          <button type="button" class="mini-button" onclick="departmentAction('${d.id}','align')">CONVERSAR</button>
         </article>`).join("");
 
       const alignment = document.getElementById("alignment-department-list");
