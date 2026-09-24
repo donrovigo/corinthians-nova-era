@@ -1,24 +1,1277 @@
-corinthians-nova-era/
-│
-├── index.html
-├── style.css
-├── game.js
-│
-├── data/
-│   ├── players.js
-│   ├── staff.js
-│   ├── politicians.js
-│   ├── clubs.js
-│   └── events.js
-│
-├── systems/
-│   ├── election.js
-│   ├── finances.js
-│   ├── transfers.js
-│   ├── contracts.js
-│   ├── scouting.js
-│   ├── politics.js
-│   ├── media.js
-│   └── calendar.js
-│
-└── README.md
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Corinthians: Nova Era</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="game.js" defer></script>
+</head>
+
+<body>
+
+  <!-- =========================
+       TELA INICIAL
+  ========================== -->
+
+  <main id="app">
+
+    <section id="home-screen" class="screen active">
+
+      <div class="hero">
+
+        <div class="hero-content">
+
+          <span class="eyebrow">
+            SIMULAÇÃO DE GESTÃO
+          </span>
+
+          <h1>Corinthians:<br>Nova Era</h1>
+
+          <p class="subtitle">
+            Você não controla apenas o futebol.<br>
+            Você controla uma instituição.
+          </p>
+
+          <p class="season">
+            Temporada 2026
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- MODOS DE CARREIRA -->
+
+      <section class="career-section">
+
+        <div class="section-header">
+          <span class="eyebrow">ESCOLHA SUA CARREIRA</span>
+
+          <h2>
+            Qual será o seu papel?
+          </h2>
+
+          <p>
+            Cada carreira possui objetivos, poderes,
+            riscos e caminhos diferentes.
+          </p>
+        </div>
+
+
+        <div class="career-grid">
+
+
+          <!-- PRESIDENTE -->
+
+          <article class="career-card president-card">
+
+            <div class="career-icon">
+              🏛️
+            </div>
+
+            <div class="career-content">
+
+              <span class="career-type">
+                CARREIRA POLÍTICA
+              </span>
+
+              <h3>Presidente</h3>
+
+              <p>
+                Comece como candidato e construa sua trajetória
+                até a presidência do Corinthians.
+              </p>
+
+              <ul>
+                <li>Monte sua chapa</li>
+                <li>Escolha seu vice</li>
+                <li>Negocie com conselheiros</li>
+                <li>Faça campanha</li>
+                <li>Enfrente oposição</li>
+                <li>Administre o clube</li>
+              </ul>
+
+              <button
+                class="primary-button"
+                onclick="startPresidentCareer()"
+              >
+                COMEÇAR COMO CANDIDATO
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- TÉCNICO -->
+
+          <article class="career-card">
+
+            <div class="career-icon">
+              ⚽
+            </div>
+
+            <div class="career-content">
+
+              <span class="career-type">
+                CARREIRA ESPORTIVA
+              </span>
+
+              <h3>Técnico</h3>
+
+              <p>
+                Assuma o comando do futebol e tente transformar
+                o elenco em uma equipe competitiva.
+              </p>
+
+              <ul>
+                <li>Escalação</li>
+                <li>Treinamentos</li>
+                <li>Tática</li>
+                <li>Contratações</li>
+                <li>Vestiário</li>
+                <li>Imprensa</li>
+              </ul>
+
+              <button
+                class="secondary-button"
+                onclick="startGenericCareer('coach')"
+              >
+                INICIAR CARREIRA
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- DIRETOR DE FUTEBOL -->
+
+          <article class="career-card">
+
+            <div class="career-icon">
+              📋
+            </div>
+
+            <div class="career-content">
+
+              <span class="career-type">
+                GESTÃO DO FUTEBOL
+              </span>
+
+              <h3>Diretor de Futebol</h3>
+
+              <p>
+                Gerencie o mercado, contratos, orçamento,
+                scouts e planejamento do elenco.
+              </p>
+
+              <ul>
+                <li>Contratações</li>
+                <li>Vendas</li>
+                <li>Renovações</li>
+                <li>Scouting</li>
+                <li>Agentes</li>
+                <li>Orçamento</li>
+              </ul>
+
+              <button
+                class="secondary-button"
+                onclick="startGenericCareer('director')"
+              >
+                INICIAR CARREIRA
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- BASE -->
+
+          <article class="career-card">
+
+            <div class="career-icon">
+              🌱
+            </div>
+
+            <div class="career-content">
+
+              <span class="career-type">
+                FORMAÇÃO
+              </span>
+
+              <h3>Diretor da Base</h3>
+
+              <p>
+                Construa uma geração de jogadores,
+                desenvolva talentos e negocie jovens.
+              </p>
+
+              <ul>
+                <li>Categorias de base</li>
+                <li>Scouts</li>
+                <li>Desenvolvimento</li>
+                <li>Contratos</li>
+                <li>Captação</li>
+                <li>Transição ao profissional</li>
+              </ul>
+
+              <button
+                class="secondary-button"
+                onclick="startGenericCareer('academy')"
+              >
+                INICIAR CARREIRA
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- CONSELHEIRO -->
+
+          <article class="career-card">
+
+            <div class="career-icon">
+              🗳️
+            </div>
+
+            <div class="career-content">
+
+              <span class="career-type">
+                CARREIRA POLÍTICA
+              </span>
+
+              <h3>Conselheiro</h3>
+
+              <p>
+                Entre no ambiente político do clube,
+                construa alianças e ganhe influência.
+              </p>
+
+              <ul>
+                <li>Votações</li>
+                <li>Alianças</li>
+                <li>Conselho</li>
+                <li>Oposição</li>
+                <li>Influência</li>
+                <li>Futuras eleições</li>
+              </ul>
+
+              <button
+                class="secondary-button"
+                onclick="startGenericCareer('councilor')"
+              >
+                INICIAR CARREIRA
+              </button>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </section>
+
+    </section>
+
+
+    <!-- =========================
+         JOGO
+    ========================== -->
+
+    <section id="game-screen" class="screen">
+
+      <!-- CABEÇALHO -->
+
+      <header class="game-header">
+
+        <div>
+
+          <span class="eyebrow">
+            CORINTHIANS: NOVA ERA
+          </span>
+
+          <h1 id="game-career-title">
+            Gestão
+          </h1>
+
+        </div>
+
+
+        <div class="game-date">
+
+          <span>
+            DATA
+          </span>
+
+          <strong id="current-date">
+            01/01/2026
+          </strong>
+
+        </div>
+
+      </header>
+
+
+      <!-- DASHBOARD -->
+
+      <section class="dashboard">
+
+        <div class="stat-card">
+
+          <span>CAIXA</span>
+
+          <strong id="money">
+            R$ 0
+          </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <span>CONSELHO</span>
+
+          <strong id="council-trust">
+            20
+          </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <span>TORCIDA</span>
+
+          <strong id="fan-mood">
+            50
+          </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <span>IMPRENSA</span>
+
+          <strong id="press-pressure">
+            10
+          </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <span>VESTIÁRIO</span>
+
+          <strong id="dressing-room">
+            60
+          </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <span>CONFIANÇA DO TÉCNICO</span>
+
+          <strong id="coach-confidence">
+            50
+          </strong>
+
+        </div>
+
+      </section>
+
+
+      <!-- CONTEÚDO PRINCIPAL -->
+
+      <div class="game-layout">
+
+
+        <!-- COLUNA PRINCIPAL -->
+
+        <section class="main-panel">
+
+          <div id="event-container">
+
+            <span class="eyebrow">
+              EVENTO
+            </span>
+
+            <h2 id="event-title">
+              Início da temporada
+            </h2>
+
+            <p id="event-description">
+              2026 começou. Suas primeiras decisões
+              irão definir sua trajetória dentro do clube.
+            </p>
+
+          </div>
+
+
+          <div id="choices-container">
+
+            <button
+              class="choice-button"
+              onclick="genericNext()"
+            >
+              Continuar
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- COLUNA LATERAL -->
+
+        <aside class="side-panel">
+
+
+          <!-- ELEIÇÃO -->
+
+          <div class="panel-card">
+
+            <span class="eyebrow">
+              ELEIÇÃO 2026
+            </span>
+
+            <h3>
+              28 NOV
+            </h3>
+
+            <p>
+              A eleição presidencial está marcada
+              para 28 de novembro de 2026.
+            </p>
+
+            <div class="progress">
+
+              <div
+                id="election-progress"
+                class="progress-bar"
+                style="width: 0%"
+              ></div>
+
+            </div>
+
+            <small>
+              Preparação eleitoral
+            </small>
+
+          </div>
+
+
+          <!-- CLUBE -->
+
+          <div class="panel-card">
+
+            <span class="eyebrow">
+              SITUAÇÃO DO CLUBE
+            </span>
+
+            <div class="club-status">
+
+              <div>
+                <span>Dívida</span>
+                <strong id="club-debt">
+                  R$ 0
+                </strong>
+              </div>
+
+              <div>
+                <span>Transfer Ban</span>
+                <strong id="transfer-ban">
+                  ATIVO
+                </strong>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- LOG -->
+
+          <div class="panel-card">
+
+            <span class="eyebrow">
+              HISTÓRICO
+            </span>
+
+            <div
+              id="game-log"
+              class="game-log"
+            >
+              <p>
+                O jogo começou.
+              </p>
+            </div>
+
+          </div>
+
+        </aside>
+
+      </div>
+
+
+      <!-- RODAPÉ DO JOGO -->
+
+      <footer class="game-footer">
+
+        <button
+          class="secondary-button"
+          onclick="returnToMenu()"
+        >
+          VOLTAR AO MENU
+        </button>
+
+        <button
+          class="primary-button"
+          onclick="advanceGame()"
+        >
+          AVANÇAR
+        </button>
+
+      </footer>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       INTERFACE / CONTROLE
+  ========================== -->
+
+  <script>
+
+    function showScreen(screenId) {
+
+      document
+        .querySelectorAll(".screen")
+        .forEach(screen => {
+          screen.classList.remove("active");
+        });
+
+      const target = document.getElementById(screenId);
+
+      if (target) {
+        target.classList.add("active");
+      }
+    }
+
+
+    function showCareer() {
+      showScreen("home-screen");
+    }
+
+
+    function startPresidentCareer() {
+
+      if (!window.Game) {
+        console.error("Motor do jogo não carregado.");
+        return;
+      }
+
+      Game.start("president");
+
+      showScreen("game-screen");
+
+      setEvent(
+        "Você decidiu entrar na política do Corinthians.",
+        "2026 começa com uma escolha importante: você será apenas um torcedor influente ou tentará construir uma candidatura para a eleição presidencial?",
+        [
+          {
+            text: "Começar a construir minha candidatura",
+            action: () => electoralScenario()
+          },
+          {
+            text: "Primeiro entender o cenário político",
+            action: () => footballPolitics()
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function startGenericCareer(career) {
+
+      if (!window.Game) {
+        console.error("Motor do jogo não carregado.");
+        return;
+      }
+
+      Game.start(career);
+
+      showScreen("game-screen");
+
+      setEvent(
+        "Sua carreira começou.",
+        "É 1º de janeiro de 2026. O Corinthians entra em uma nova temporada e suas decisões começarão a alterar a trajetória do clube.",
+        [
+          {
+            text: "Começar",
+            action: () => genericNext()
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function electoralScenario() {
+
+      setEvent(
+        "A eleição começa a tomar forma.",
+        "Antes de disputar a presidência, você precisa construir uma rede política. Pessoas do conselho, grupos internos e possíveis aliados começam a avaliar sua candidatura.",
+        [
+          {
+            text: "Procurar aliados para minha chapa",
+            action: () => {
+              Game.change("politicalSupport", 8);
+              Game.change("councilTrust", 3);
+              Game.log("Você iniciou conversas para formar sua chapa.");
+              chooseVice();
+            }
+          },
+          {
+            text: "Tentar construir uma candidatura independente",
+            action: () => {
+              Game.change("politicalSupport", 4);
+              Game.change("reputation", 5);
+              Game.log("Você decidiu construir uma candidatura independente.");
+              chooseVice();
+            }
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function chooseVice() {
+
+      setEvent(
+        "Escolha seu vice.",
+        "O vice-presidente será uma das pessoas mais próximas da sua administração. A escolha também poderá afetar suas relações políticas.",
+        [
+          {
+            text: "Vice com forte articulação política",
+            action: () => {
+              Game.state.election.vice = "articulador";
+              Game.change("politicalSupport", 10);
+              Game.change("councilTrust", 5);
+              Game.log("Você escolheu um vice com forte articulação política.");
+              campaignFinal();
+            }
+          },
+          {
+            text: "Vice com perfil administrativo",
+            action: () => {
+              Game.state.election.vice = "administrativo";
+              Game.change("reputation", 7);
+              Game.change("councilTrust", 2);
+              Game.log("Você escolheu um vice com perfil administrativo.");
+              campaignFinal();
+            }
+          },
+          {
+            text: "Vice ligado ao futebol",
+            action: () => {
+              Game.state.election.vice = "futebol";
+              Game.change("fanMood", 5);
+              Game.change("politicalSupport", 4);
+              Game.log("Você escolheu um vice com forte ligação ao futebol.");
+              campaignFinal();
+            }
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function campaignFinal() {
+
+      setEvent(
+        "Campanha em andamento.",
+        "Agora você precisa decidir como conduzir sua campanha. Toda escolha terá consequências políticas, financeiras e de imagem.",
+        [
+          {
+            text: "Focar na recuperação financeira",
+            action: () => {
+              Game.change("reputation", 8);
+              Game.change("councilTrust", 5);
+              Game.change("fanMood", -2);
+              Game.log("Sua campanha passou a priorizar a recuperação financeira.");
+              electionSimulation();
+            }
+          },
+          {
+            text: "Focar no futebol",
+            action: () => {
+              Game.change("fanMood", 8);
+              Game.change("politicalSupport", 3);
+              Game.log("Sua campanha passou a priorizar o futebol.");
+              electionSimulation();
+            }
+          },
+          {
+            text: "Focar em transparência e governança",
+            action: () => {
+              Game.change("reputation", 10);
+              Game.change("councilTrust", 7);
+              Game.change("fanMood", 3);
+              Game.log("Sua campanha passou a priorizar transparência e governança.");
+              electionSimulation();
+            }
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function electionSimulation() {
+
+      setEvent(
+        "28 de novembro de 2026.",
+        "Chegou o dia da eleição. O resultado abaixo é uma SIMULAÇÃO dentro do jogo e não representa uma previsão da eleição real.",
+        [
+          {
+            text: "Ir para a votação",
+            action: () => {
+
+              const support =
+                Game.state.politicalSupport +
+                Game.state.councilTrust +
+                Game.state.reputation;
+
+              if (support >= 110) {
+
+                Game.state.election.won = true;
+
+                Game.log(
+                  "SIMULAÇÃO: sua chapa venceu a eleição presidencial."
+                );
+
+                presidentMandate();
+
+              } else {
+
+                Game.state.election.won = false;
+
+                Game.log(
+                  "SIMULAÇÃO: sua chapa não venceu a eleição."
+                );
+
+                oppositionCareer();
+
+              }
+
+            }
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function presidentMandate() {
+
+      Game.state.money = 50000000;
+
+      setEvent(
+        "Você venceu a eleição.",
+        "SIMULAÇÃO: você assume a presidência do Corinthians em 2027. Agora começa a parte mais difícil: administrar o clube.",
+        [
+          {
+            text: "Montar minha diretoria",
+            action: () => boardManagement()
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function boardManagement() {
+
+      setEvent(
+        "Montagem da diretoria.",
+        "Você precisa definir como será a estrutura profissional da nova administração.",
+        [
+          {
+            text: "Priorizar profissionais do mercado",
+            action: () => {
+              Game.change("reputation", 8);
+              Game.change("councilTrust", -2);
+              Game.log("Você priorizou profissionais externos.");
+              footballManagement();
+            }
+          },
+          {
+            text: "Priorizar pessoas politicamente próximas",
+            action: () => {
+              Game.change("councilTrust", 10);
+              Game.change("reputation", -3);
+              Game.log("Você priorizou aliados políticos.");
+              footballManagement();
+            }
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function footballManagement() {
+
+      setEvent(
+        "Planejamento do futebol.",
+        "O departamento de futebol apresenta suas primeiras necessidades para a temporada.",
+        [
+          {
+            text: "Pedir um relatório completo do elenco",
+            action: () => scoutingReport()
+          },
+          {
+            text: "Delegar o mercado ao diretor de futebol",
+            action: () => {
+              Game.log(
+                "Você delegou o mercado ao diretor de futebol."
+              );
+
+              setEvent(
+                "Delegação registrada.",
+                "O diretor recebeu autonomia para buscar jogadores dentro do orçamento definido pela diretoria.",
+                [
+                  {
+                    text: "Aguardar relatório",
+                    action: () => scoutingReport()
+                  }
+                ]
+              );
+
+              updateDashboard();
+            }
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function scoutingReport() {
+
+      setEvent(
+        "Relatório do departamento de futebol.",
+        "O departamento identificou posições que precisam de reforços. No sistema completo, scouts, agentes, contratos, valores e negociações serão processados individualmente.",
+        [
+          {
+            text: "Avançar",
+            action: () => genericNext()
+          }
+        ]
+      );
+
+      Game.log(
+        "Relatório de scouting recebido."
+      );
+
+      updateDashboard();
+    }
+
+
+    function oppositionCareer() {
+
+      setEvent(
+        "A eleição terminou.",
+        "SIMULAÇÃO: você não assumiu a presidência. Sua carreira política continua e você poderá construir influência como oposição ou conselheiro.",
+        [
+          {
+            text: "Atuar como oposição",
+            action: () => {
+              Game.change("politicalSupport", 5);
+              Game.log("Você iniciou sua atuação na oposição.");
+              genericNext();
+            }
+          },
+          {
+            text: "Tentar construir uma nova base política",
+            action: () => {
+              Game.change("councilTrust", 8);
+              Game.change("reputation", 5);
+              Game.log("Você começou a reconstruir sua base política.");
+              genericNext();
+            }
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function footballPolitics() {
+
+      setEvent(
+        "O ambiente político.",
+        "O clube possui grupos, conselheiros, interesses e diferentes visões sobre sua administração. Neste jogo, essas relações serão representadas por variáveis internas e eventos.",
+        [
+          {
+            text: "Voltar para a candidatura",
+            action: () => electoralScenario()
+          },
+          {
+            text: "Analisar a situação financeira",
+            action: () => financeScenario()
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function financeScenario() {
+
+      setEvent(
+        "Situação financeira.",
+        "O Corinthians começa 2026 enfrentando restrições financeiras. Você precisará equilibrar futebol, dívidas, salários, contratos e receitas.",
+        [
+          {
+            text: "Priorizar fluxo de caixa",
+            action: () => {
+              Game.change("reputation", 3);
+              Game.log("Você decidiu priorizar o fluxo de caixa.");
+              genericNext();
+            }
+          },
+          {
+            text: "Priorizar reforços no futebol",
+            action: () => {
+              Game.change("fanMood", 5);
+              Game.change("money", -5000000);
+              Game.log("Você decidiu priorizar investimentos no futebol.");
+              genericNext();
+            }
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function genericNext() {
+
+      if (!window.Game) return;
+
+      Game.advanceDays(7);
+
+      setEvent(
+        "Uma nova semana começou.",
+        "O calendário avançou. Novos acontecimentos poderão surgir conforme sua carreira evolui.",
+        [
+          {
+            text: "Continuar",
+            action: () => genericNext()
+          }
+        ]
+      );
+
+      updateDashboard();
+    }
+
+
+    function advanceGame() {
+
+      genericNext();
+
+    }
+
+
+    function setEvent(title, description, choices = []) {
+
+      const titleElement =
+        document.getElementById("event-title");
+
+      const descriptionElement =
+        document.getElementById("event-description");
+
+      const choicesElement =
+        document.getElementById("choices-container");
+
+
+      if (titleElement) {
+        titleElement.textContent = title;
+      }
+
+      if (descriptionElement) {
+        descriptionElement.textContent = description;
+      }
+
+
+      if (choicesElement) {
+
+        choicesElement.innerHTML = "";
+
+        choices.forEach(choice => {
+
+          const button =
+            document.createElement("button");
+
+          button.className = "choice-button";
+
+          button.textContent = choice.text;
+
+          button.addEventListener(
+            "click",
+            choice.action
+          );
+
+          choicesElement.appendChild(button);
+
+        });
+
+      }
+
+    }
+
+
+    function updateDashboard() {
+
+      if (!window.Game) return;
+
+      const state = Game.state;
+
+
+      const money =
+        document.getElementById("money");
+
+      const council =
+        document.getElementById("council-trust");
+
+      const fans =
+        document.getElementById("fan-mood");
+
+      const press =
+        document.getElementById("press-pressure");
+
+      const dressing =
+        document.getElementById("dressing-room");
+
+      const coach =
+        document.getElementById("coach-confidence");
+
+      const date =
+        document.getElementById("current-date");
+
+      const debt =
+        document.getElementById("club-debt");
+
+      const transferBan =
+        document.getElementById("transfer-ban");
+
+      const careerTitle =
+        document.getElementById("game-career-title");
+
+
+      if (money) {
+        money.textContent =
+          formatMoney(state.money);
+      }
+
+      if (council) {
+        council.textContent =
+          state.councilTrust;
+      }
+
+      if (fans) {
+        fans.textContent =
+          state.fanMood;
+      }
+
+      if (press) {
+        press.textContent =
+          state.pressPressure;
+      }
+
+      if (dressing) {
+        dressing.textContent =
+          state.dressingRoomMorale;
+      }
+
+      if (coach) {
+        coach.textContent =
+          state.coachConfidence;
+      }
+
+      if (date) {
+        date.textContent =
+          Game.formatDate();
+      }
+
+      if (debt) {
+        debt.textContent =
+          formatMoney(state.club.debt);
+      }
+
+      if (transferBan) {
+        transferBan.textContent =
+          state.club.transferBan
+            ? "ATIVO"
+            : "INATIVO";
+      }
+
+      if (careerTitle) {
+
+        const titles = {
+
+          president: "Candidato à Presidência",
+          coach: "Técnico",
+          director: "Diretor de Futebol",
+          academy: "Diretor da Base",
+          councilor: "Conselheiro"
+
+        };
+
+        careerTitle.textContent =
+          titles[state.career] || "Gestão";
+
+      }
+
+
+      updateElectionProgress();
+
+      renderGameLog();
+
+    }
+
+
+    function updateElectionProgress() {
+
+      const progress =
+        document.getElementById(
+          "election-progress"
+        );
+
+      if (!progress || !window.Game) return;
+
+      const start =
+        new Date("2026-01-01T00:00:00");
+
+      const end =
+        new Date("2026-11-28T00:00:00");
+
+      const current =
+        Game.state.date;
+
+      const total =
+        end - start;
+
+      const elapsed =
+        current - start;
+
+      let percentage =
+        (elapsed / total) * 100;
+
+      percentage =
+        Math.max(
+          0,
+          Math.min(100, percentage)
+        );
+
+      progress.style.width =
+        percentage + "%";
+
+    }
+
+
+    function renderGameLog() {
+
+      const logElement =
+        document.getElementById("game-log");
+
+      if (!logElement || !window.Game) return;
+
+      const history =
+        Game.state.history || [];
+
+      if (history.length === 0) {
+
+        logElement.innerHTML =
+          "<p>O jogo começou.</p>";
+
+        return;
+
+      }
+
+      logElement.innerHTML =
+        history
+          .slice(-8)
+          .reverse()
+          .map(item => {
+            return `<p>${item}</p>`;
+          })
+          .join("");
+
+    }
+
+
+    function formatMoney(value) {
+
+      return new Intl.NumberFormat(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL",
+          maximumFractionDigits: 0
+        }
+      ).format(value || 0);
+
+    }
+
+
+    function returnToMenu() {
+
+      showScreen("home-screen");
+
+    }
+
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+
+        updateDashboard();
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
