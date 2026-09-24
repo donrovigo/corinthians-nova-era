@@ -62,6 +62,7 @@ const GameEngine = {
     for (let i = 0; i < days; i++) {
       Game.state.date.setDate(Game.state.date.getDate() + 1);
       this.processDailySystems();
+      if (window.CareerCore) CareerCore.tick(Game);
       if (typeof Game !== "undefined" && Game.processInformationCenter) Game.processInformationCenter();
       this.checkTasks();
       this.checkRandomEvent();
