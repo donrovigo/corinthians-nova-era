@@ -199,13 +199,46 @@ const GameEngine = {
       return;
     }
 
-    if (
-      typeof Events.triggerEvent === "function"
-    ) {
+    /*
+     * O evento base fornece a mecânica.
+     * Narrative fornece a apresentação humana e variável.
+     */
+    if (typeof Narrative !== "undefined" && Narrative.show) {
+      Narrative.show(event);
+    } else if (typeof Events.triggerEvent === "function") {
+      Events.triggerEvent(event.id);
+    }
 
-      Events.triggerEvent(
-        event.id
-      );
+    /*
+     * Em situações políticas, às vezes surge uma segunda camada:
+     * uma informação de bastidor que não é necessariamente verdadeira.
+     * É SIMULAÇÃO e sempre apresentada como rumor/movimentação.
+     */
+    if (
+      typeof Narrative !== "undefined" &&
+      Narrative.generateConspiracyHint &&
+      Game.state.career === "presidente" &&
+      Game.state.politicalSupport >= 20 &&
+      Math.random() < 0.22
+    ) {
+      const hint = Narrative.generateConspiracyHint();
+      if (hint && typeof setEvent === "function") {
+        setEvent(
+          hint.title,
+          hint.description,
+          hint.choices.map(choice => ({
+            text: choice.text,
+            action: () => {
+              if (typeof applyEventEffects === "function") {
+                applyEventEffects(choice.effects);
+              }
+              Game.log("SIMULAÇÃO: " + hint.title + " — " + choice.result);
+              Game.render();
+              if (typeof updateDashboard === "function") updateDashboard();
+            }
+          }))
+        );
+      }
     }
   },
 
