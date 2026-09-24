@@ -50,6 +50,11 @@ const Game = {
       new Date("2026-01-01T00:00:00");
 
     this.state.history = [];
+    this.state.matches = [];
+    this.state.results = [];
+    this.state.standings = { points: 0, played: 0, wins: 0, draws: 0, losses: 0, gf: 0, ga: 0 };
+    this.state.transferWindow = { open: false, lastChecked: null };
+    this.state.lastCalendarDate = null;
 
     this.state.election = {
       candidate: false,
@@ -422,6 +427,123 @@ const Game = {
 
     }
 
+  },
+
+  formatDate(date = this.state.date) {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toISOString().slice(0, 10);
+  },
+
+  ensureSeasonSystems() {
+    const s = this.state;
+    s.season = s.season || 2026;
+    s.matches = Array.isArray(s.matches) ? s.matches : [];
+    s.results = Array.isArray(s.results) ? s.results : [];
+    s.standings = s.standings || { points: 0, played: 0, wins: 0, draws: 0, losses: 0, gf: 0, ga: 0 };
+    s.transferWindow = s.transferWindow || { open: false, lastChecked: null };
+    s.clubReputation = Number(s.clubReputation ?? s.reputation ?? 50);
+    s.lastCalendarDate = s.lastCalendarDate || null;
+  },
+
+  getSeasonSummary() {
+    this.ensureSeasonSystems();
+    const st = this.state.standings;
+    return {
+      played: st.played, points: st.points, wins: st.wins, draws: st.draws,
+      losses: st.losses, gd: st.gf - st.ga
+    };
+  },
+
+  processSeasonCalendar() {
+    this.ensureSeasonSystems();
+    const key = this.formatDate();
+    if (this.state.lastCalendarDate === key) return;
+    this.state.lastCalendarDate = key;
+
+    const d = this.state.date;
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+
+    const windowsOpen = (month === 1 && day >= 5) || (month === 7 && day >= 3 && day <= 31);
+    const wasOpen = this.state.transferWindow.open;
+    this.state.transferWindow.open = windowsOpen;
+
+    if (windowsOpen && !wasOpen) {
+      this.addNews("🛒 Janela de transferências aberta", "O mercado está oficialmente aberto. Scouting, propostas e orçamento passam a ter prioridade.", "MERCADO");
+      this.addMail("Departamento de Futebol", "Janela de mercado", "A janela está aberta. Revise necessidades do elenco e o orçamento antes de avançar.", "MERCADO");
+    }
+    if (!windowsOpen && wasOpen) {
+      this.addNews("🔒 Janela de transferências fechada", "O mercado foi encerrado. Operações pendentes precisam aguardar a próxima janela.", "MERCADO");
+    }
+
+    const weekday = d.getDay();
+    if ((weekday === 0 || weekday === 3) && Math.random() < 0.42) {
+      this.generateScheduledMatch();
+    }
+
+    if (month === 12 && day === 31) {
+      const summary = this.getSeasonSummary();
+      this.addNews("🏁 Temporada encerrada", `Campanha: ${summary.played} jogos, ${summary.points} pontos, ${summary.wins} vitórias, ${summary.draws} empates e ${summary.losses} derrotas.`, "TEMPORADA");
+      this.addMail("Secretaria do Clube", "Relatório anual", "A temporada foi encerrada. O desempenho esportivo e financeiro está pronto para avaliação.", "DIRETORIA");
+    }
+  },
+
+  generateScheduledMatch() {
+    this.ensureSeasonSystems();
+    const date = this.formatDate();
+    if (this.state.matches.some(m => m.date === date && !m.played)) return;
+
+    const opponents = ["Palmeiras", "São Paulo", "Santos", "Flamengo", "Grêmio", "Internacional", "Bahia", "Cruzeiro"];
+    const opponent = opponents[Math.floor(Math.random() * opponents.length)];
+    const home = Math.random() >= 0.48;
+    const base = 1 + (Number(this.state.coachConfidence || 50) + Number(this.state.dressingRoomMorale || 50)) / 100;
+    const strength = Math.max(0.45, Math.min(2.1, base / 1.8));
+    const opponentStrength = 0.85 + Math.random() * 0.45;
+    const homeBoost = home ? 0.18 : 0;
+    const lambdaFor = Math.max(0.2, 1.15 * strength + homeBoost);
+    const lambdaAgainst = Math.max(0.15, 1.0 * opponentStrength - (this.state.reputation || 50) / 500);
+    const goalsFor = Math.min(7, Math.floor(-Math.log(Math.random()) * lambdaFor));
+    const goalsAgainst = Math.min(6, Math.floor(-Math.log(Math.random()) * lambdaAgainst));
+
+    const match = {
+      id: "match-" + date + "-" + Math.random().toString(36).slice(2, 8),
+      date, competition: "Calendário Nacional", opponent, home, played: true,
+      goalsFor, goalsAgainst
+    };
+    this.state.matches.push(match);
+    this.state.results.unshift(match);
+
+    const st = this.state.standings;
+    st.played++;
+    st.gf += goalsFor;
+    st.ga += goalsAgainst;
+    if (goalsFor > goalsAgainst) { st.wins++; st.points += 3; }
+    else if (goalsFor === goalsAgainst) { st.draws++; st.points += 1; }
+    else st.losses++;
+
+    if (goalsFor > goalsAgainst) {
+      this.change("fanMood", 3);
+      this.change("reputation", 2);
+      this.change("coachConfidence", 2);
+    } else if (goalsFor === goalsAgainst) {
+      this.change("fanMood", 1);
+    } else {
+      this.change("fanMood", -4);
+      this.change("pressPressure", 4);
+      this.change("coachConfidence", -2);
+    }
+
+    const result = goalsFor > goalsAgainst ? "VITÓRIA" : goalsFor === goalsAgainst ? "EMPATE" : "DERROTA";
+    this.addNews(`⚽ ${result}: Corinthians ${goalsFor} x ${goalsAgainst} ${opponent}`, `O resultado entrou automaticamente no histórico da temporada.`, "FUTEBOL");
+    this.addMail("Departamento de Futebol", `Pós-jogo: ${result}`, `Placar: Corinthians ${goalsFor} x ${goalsAgainst} ${opponent}. Moral e pressão foram atualizadas automaticamente.`, "FUTEBOL");
+    this.log(`⚽ ${result}: Corinthians ${goalsFor} x ${goalsAgainst} ${opponent}.`);
+
+    if (typeof FINANCE !== "undefined") {
+      const attendanceRevenue = (home ? 1800000 : 500000) + Math.floor(Math.random() * 900000);
+      FINANCE.state.matchdayRevenue = Number(FINANCE.state.matchdayRevenue || 0) + attendanceRevenue;
+      FINANCE.state.monthlyRevenue = Number(FINANCE.state.monthlyRevenue || 0) + attendanceRevenue;
+      FINANCE.syncGameState?.();
+    }
   },
 
   ensureInformationCenter() {
