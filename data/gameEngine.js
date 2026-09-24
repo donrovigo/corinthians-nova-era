@@ -200,6 +200,10 @@ const GameEngine = {
       return;
     }
 
+    if (typeof Game !== "undefined" && Game.addNews) {
+      Game.addNews(event.title || "Novo acontecimento", event.description || "Um novo acontecimento alterou o ambiente do clube.", String(event.category || "CLUBE").toUpperCase());
+    }
+
     /*
      * O evento base fornece a mecânica.
      * Narrative fornece a apresentação humana e variável.
