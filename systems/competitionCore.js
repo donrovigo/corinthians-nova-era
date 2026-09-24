@@ -10,6 +10,57 @@ window.CompetitionCore={
     return s;
   },
 
+  getTeamRating:function(team){
+    var ratings={"Flamengo":84,"Palmeiras":84,"Atlético-MG":81,"Internacional":79,"São Paulo":79,"Fluminense":78,"Botafogo":78,"Grêmio":77,"Corinthians":80,"Bahia":76,"Cruzeiro":75,"Bragantino":74,"Vasco":73,"Santos":72,"Vitória":71,"Ceará":70,"Sport":69,"Mirassol":68,"Chapecoense":66,"Remo":65};
+    return ratings[team]||70;
+  },
+
+  generateRoundPairings:function(G,round){
+    var teams=window.getBrasileiraoTeams?getBrasileiraoTeams():[];
+    var table=this.ensureBrasileiraoTable(G);
+    var pairs=[];
+    var fixed=(window.getBrasileiraoFixtures?getBrasileiraoFixtures():[]).find(function(x){return x.round===round;});
+    if(!fixed) return pairs;
+    var others=teams.filter(function(t){return t!=="Corinthians" && t!==fixed.opponent;});
+    var used={};
+    used["Corinthians"]=true; used[fixed.opponent]=true;
+    pairs.push({home:fixed.home?"Corinthians":fixed.opponent,away:fixed.home?fixed.opponent:"Corinthians"});
+    while(others.length>=2){
+      var a=others.shift(), b=others.shift();
+      pairs.push({home:a,away:b});
+    }
+    return pairs;
+  },
+
+  simulateScore:function(home,away,round){
+    var h=this.getTeamRating(home)+3, a=this.getTeamRating(away);
+    var seed=(round*37 + home.length*11 + away.length*17) % 100;
+    var diff=h-a;
+    var hg=Math.max(0,Math.min(5,Math.floor((h/28)+(seed%3)-1)));
+    var ag=Math.max(0,Math.min(4,Math.floor((a/31)+((seed+1)%3)-1)));
+    if(diff>=7 && hg<=ag) hg=ag+1;
+    if(diff<=-7 && ag<=hg) ag=hg+1;
+    return [hg,ag];
+  },
+
+  simulateOtherLeagueMatches:function(G,round,date){
+    var s=this.init(G);
+    s.simulatedRounds=s.simulatedRounds||{};
+    var key=String(round);
+    if(s.simulatedRounds[key]) return;
+    var pairs=this.generateRoundPairings(G,round);
+    pairs.forEach(function(pair){
+      if(pair.home==="Corinthians" || pair.away==="Corinthians") return;
+      var scores=this.simulateScore(pair.home,pair.away,round);
+      var fixtureId="sim-brasileirao-"+round+"-"+pair.home+"-"+pair.away;
+      if(!s._simulatedFixtures) s._simulatedFixtures={};
+      if(s._simulatedFixtures[fixtureId]) return;
+      s._simulatedFixtures[fixtureId]=true;
+      CompetitionCore.recordLeagueMatch(G,pair.home,pair.away,scores[0],scores[1]);
+    });
+    s.simulatedRounds[key]=date;
+  },
+
   onDay:function(G){
     var s=this.init(G);
     var d=G.formatDate?G.formatDate():new Date(s.date).toISOString().slice(0,10);
