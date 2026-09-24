@@ -1401,13 +1401,12 @@
       const won = state.election && state.election.won === true;
       const tabs = document.querySelectorAll(".department-tab");
       tabs.forEach(tab => {
-        const text = (tab.textContent || "").trim().toUpperCase();
-        const isOverview = text === "VISÃO GERAL";
-        const isPolitics = text === "POLÍTICA";
-        const locked = presidential && !won && !isOverview && !isPolitics;
-        tab.disabled = locked;
-        tab.classList.toggle("locked", locked);
-        if (locked) tab.title = "Disponível somente após vencer a eleição presidencial.";
+        // A navegação é sempre liberada para consulta.
+        // Restrições de gestão devem ser aplicadas nas ações que alteram o clube,
+        // não no acesso às informações dos departamentos.
+        tab.disabled = false;
+        tab.classList.remove("locked");
+        tab.removeAttribute("title");
       });
       const title = document.getElementById("game-career-title");
       if (title && presidential) title.textContent = won ? "Presidência" : (state.election.won === false ? "Oposição" : "Pré-campanha");
@@ -1478,9 +1477,13 @@
       const state = Game.state;
 
       updateManagementAccess();
-      if (typeof openInfoFeed === "function" && !document.getElementById("info-feed")?.dataset.ready) {
-        openInfoFeed("news");
-        const feed = document.getElementById("info-feed"); if (feed) feed.dataset.ready = "1";
+      if (typeof renderInformationCenter === "function") {
+        renderInformationCenter();
+        const feed = document.getElementById("info-feed");
+        if (feed && !feed.dataset.ready) {
+          openInfoFeed("news");
+          feed.dataset.ready = "1";
+        }
       }
 
       const money =
