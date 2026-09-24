@@ -633,6 +633,13 @@ const Game = {
       });
     }
 
+    if (this.state.career === "presidente" && this.state.election?.won === true && month === 12 && day === 1) {
+      once("president-review-" + key, () => {
+        this.addMail("Conselho Fiscal", "Balanço da gestão", "O Conselho solicita uma revisão das metas esportivas, financeiras e institucionais antes do encerramento do ano.", "DIRETORIA");
+        this.addNews("📋 Balanço da gestão solicitado", "A presidência entrou no período de avaliação anual.", "DIRETORIA");
+      });
+    }
+
     if (typeof FINANCE !== "undefined" && FINANCE.getFinancialHealth) {
       const health = FINANCE.getFinancialHealth();
       if (health === "critica" || health === "muito_fragil") {
