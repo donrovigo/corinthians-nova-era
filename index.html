@@ -1380,22 +1380,34 @@
           button.className = "choice-button";
           button.textContent = choice.text;
           button.dataset.choice = "1";
-          button.addEventListener("click", (event) => {
+
+          // A ação fica diretamente no elemento. Isso evita depender de
+          // listeners recriados quando o evento é trocado pelo motor.
+          button.onclick = function(event) {
             event.preventDefault();
             event.stopPropagation();
+
+            if (button.dataset.processing === "1") return;
+            button.dataset.processing = "1";
+            button.disabled = true;
+
             try {
               if (typeof choice.action === "function") {
                 choice.action();
+              } else {
+                throw new Error("Esta resposta não possui uma ação válida.");
               }
             } catch (error) {
               console.error("Erro ao executar decisão:", error);
+              button.disabled = false;
+              button.dataset.processing = "0";
               setEvent(
                 "Erro ao processar decisão",
-                "A decisão foi selecionada, mas o motor encontrou um erro. O restante da carreira continua disponível.",
-                [{ text: "Voltar ao painel", action: () => updateDashboard() }]
+                "A resposta foi selecionada, mas ocorreu um erro no processamento. Você pode continuar a carreira.",
+                [{ text: "VOLTAR AO PAINEL", action: () => updateDashboard() }]
               );
             }
-          });
+          };
           choicesElement.appendChild(button);
 
         });
