@@ -125,7 +125,7 @@ const Gameplay = {
     const ban = active[0];
     const amount = Number(ban.amount || 0);
 
-    const result = FINANCE.payTransferBan ? FINANCE.payTransferBan(ban.id || ban.creditor, amount) : null;
+    const result = FINANCE.payTransferBan ? FINANCE.payTransferBan(ban.id) : null;
 
     if (result?.success) {
       Game.change("reputation", 3);
