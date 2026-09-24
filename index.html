@@ -1376,15 +1376,26 @@
           const button =
             document.createElement("button");
 
+          button.type = "button";
           button.className = "choice-button";
-
           button.textContent = choice.text;
-
-          button.addEventListener(
-            "click",
-            choice.action
-          );
-
+          button.dataset.choice = "1";
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+              if (typeof choice.action === "function") {
+                choice.action();
+              }
+            } catch (error) {
+              console.error("Erro ao executar decisão:", error);
+              setEvent(
+                "Erro ao processar decisão",
+                "A decisão foi selecionada, mas o motor encontrou um erro. O restante da carreira continua disponível.",
+                [{ text: "Voltar ao painel", action: () => updateDashboard() }]
+              );
+            }
+          });
           choicesElement.appendChild(button);
 
         });
@@ -1414,6 +1425,11 @@
       if (shell) shell.classList.toggle("management-locked", presidential && !won);
     }
 
+    function closeInformationModal() {
+      const modal = document.getElementById("information-modal");
+      if (modal) modal.remove();
+    }
+
     function openInformationItem(type, index) {
       if (!window.Game) return;
       Game.ensureInformationCenter?.();
@@ -1422,11 +1438,24 @@
       if (!item) return;
       item.read = true;
       const title = type === "mail" ? item.subject : item.title;
-      const prefix = type === "mail" ? `✉️ ${item.from || "Correio"}` : `📰 ${item.category || "CLUBE"}`;
-      setEvent(title, item.message || "", [
-        { text: "Fechar informação", action: () => { updateDashboard(); } }
-      ]);
-      Game.log(prefix + ": " + title);
+      const meta = type === "mail"
+        ? ((item.from || "Clube") + " · " + (item.department || "DIRETORIA"))
+        : ((item.category || "CLUBE") + " · " + (item.date || ""));
+      closeInformationModal();
+      const modal = document.createElement("div");
+      modal.id = "information-modal";
+      modal.className = "information-modal";
+      modal.innerHTML =
+        '<div class="information-modal-backdrop" onclick="closeInformationModal()"></div>' +
+        '<section class="information-modal-card" role="dialog" aria-modal="true">' +
+          '<div class="information-modal-head"><span>' + (type === "mail" ? "✉️ CORREIO" : "📰 NOTÍCIA") + '</span>' +
+          '<button type="button" class="information-close" onclick="closeInformationModal()">FECHAR ×</button></div>' +
+          '<div class="eyebrow">' + escapeHtml(meta) + '</div>' +
+          '<h2>' + escapeHtml(title || "Sem título") + '</h2>' +
+          '<p>' + escapeHtml(item.message || "Esta informação não possui conteúdo.") + '</p>' +
+          '<div class="information-modal-footer"><button type="button" class="primary-button" onclick="closeInformationModal(); updateDashboard()">ENTENDI</button></div>' +
+        '</section>';
+      document.body.appendChild(modal);
       renderInformationCenter();
     }
 
