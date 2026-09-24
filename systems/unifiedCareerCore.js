@@ -506,6 +506,7 @@
 })();
 
 /* Staff impact layer */
+if(window.Game){window.Game.runScouting=function(focus){return window.StaffCore&&StaffCore.scout?StaffCore.scout(Game,focus):[];};window.Game.getStaffImpact=function(){return window.StaffCore&&StaffCore.recalc?StaffCore.recalc(Game):null;};}
 if(!window.StaffCore){window.StaffCore={
  init:function(G){var s=G.state;s.staffModel=s.staffModel||{trainingBonus:0,scoutingBonus:0,leadershipBonus:0,baseBonus:0};s.scouting=s.scouting||{focus:"geral",reports:[]};return s;},
  active:function(){return(window.STAFF||[]).filter(function(x){return x.status==="ativo"&&x.club==="corinthians";});},
