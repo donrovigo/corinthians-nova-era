@@ -637,7 +637,8 @@
             <div class="panel-heading-row">
               <div><span class="eyebrow">AÇÕES</span><h3>Próximo passo</h3></div>
             </div>
-            <div id="gameplay-actions" class="gameplay-actions"></div>
+            <div id="season-status"></div>
+      <div id="gameplay-actions" class="gameplay-actions"></div>
           </div>
 
           <!-- LOG -->
@@ -1550,6 +1551,7 @@
       renderGameplayActions();
       renderCommitments();
       renderInformationCenter();
+      renderSeasonStatus();
 
       renderGameLog();
 
@@ -1625,6 +1627,18 @@
 
     }
 
+
+    function renderSeasonStatus() {
+      if (!window.Game) return;
+      Game.ensureSeasonSystems?.();
+      const s = Game.state;
+      const st = s.standings || {};
+      const el = document.getElementById("season-status");
+      if (!el) return;
+      const windowText = s.transferWindow?.open ? "MERCADO ABERTO" : "MERCADO FECHADO";
+      el.innerHTML =
+        '<div class="season-mini"><strong>⚽ TEMPORADA</strong><span>' + (st.played || 0) + ' J</span><span>' + (st.points || 0) + ' PTS</span><span>' + (st.wins || 0) + 'V ' + (st.draws || 0) + 'E ' + (st.losses || 0) + 'D</span><b>' + windowText + '</b></div>';
+    }
 
     function renderInformationCenter() {
       if (!window.Game) return;
