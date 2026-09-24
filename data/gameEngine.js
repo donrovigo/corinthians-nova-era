@@ -50,130 +50,75 @@ const GameEngine = {
 
   advanceDay() {
 
-    if (!Game.state) {
-      return;
+    if (!Game?.state) return;
+
+    this.advanceDays(1);
+  },
+
+  advanceDays(days = 1) {
+
+    days = Math.max(1, Number(days) || 1);
+
+    for (let i = 0; i < days; i++) {
+      Game.state.date.setDate(Game.state.date.getDate() + 1);
+      this.processDailySystems();
+      this.checkTasks();
+      this.checkRandomEvent();
+      this.checkCompetitionEvents();
+      this.checkContracts();
+      this.checkElection();
+      this.syncFinance();
+      this.render();
     }
+  },
 
-    /*
-     * 1. AVANÇA O CALENDÁRIO
-     */
-
-    Game.state.date.setDate(
-      Game.state.date.getDate() + 1
-    );
-
-    /*
-     * 2. EMPRÉSTIMOS
-     */
-
-    if (
-      typeof Loans !== "undefined" &&
-      Loans.advanceDay
-    ) {
-      Loans.advanceDay();
+  processDailySystems() {
+    if (typeof Loans !== "undefined" && Loans.advanceDay) Loans.advanceDay();
+    if (typeof PlayerOffers !== "undefined" && PlayerOffers.advanceDay) PlayerOffers.advanceDay();
+    if (typeof Negotiations !== "undefined") {
+      if (Negotiations.checkDeadlines) Negotiations.checkDeadlines();
+      if (Negotiations.checkLeak) Negotiations.checkLeak();
     }
-
-    /*
-     * 3. PROPOSTAS POR JOGADORES
-     */
-
-    if (
-      typeof PlayerOffers !== "undefined" &&
-      PlayerOffers.advanceDay
-    ) {
-      PlayerOffers.advanceDay();
-    }
-
-    /*
-     * 4. NEGOCIAÇÕES
-     */
-
-    if (
-      typeof Negotiations !== "undefined"
-    ) {
-
-      if (Negotiations.checkDeadlines) {
-        Negotiations.checkDeadlines();
-      }
-
-      if (Negotiations.checkLeak) {
-        Negotiations.checkLeak();
-      }
-    }
-
-    /*
-     * 5. DELEGAÇÕES
-     */
-
-    if (
-      typeof Delegation !== "undefined" &&
-      Delegation.advanceDay
-    ) {
-      Delegation.advanceDay();
-    }
-
-    /*
-     * 6. FINANÇAS
-     */
-
+    if (typeof Delegation !== "undefined" && Delegation.advanceDay) Delegation.advanceDay();
+    if (typeof Tasks !== "undefined" && Tasks.checkDeadlines) Tasks.checkDeadlines();
     this.checkFinancialCycle();
+    this.syncTasksFromSystems();
+  },
 
-    /*
-     * 7. EVENTOS
-     */
-
-    this.checkRandomEvent();
-
-    /*
-     * 8. CALENDÁRIO ESPORTIVO
-     */
-
-    this.checkCompetitionEvents();
-
-    /*
-     * 9. EQUIPE E CONTRATOS
-     */
-
-    this.checkContracts();
-
-    /*
-     * 10. ELEIÇÃO
-     */
-
-    this.checkElection();
-
-    /*
-     * 11. SINCRONIZA ESTADO
-     */
-
-    if (
-      typeof FINANCE !== "undefined" &&
-      FINANCE.syncGameState
-    ) {
-      FINANCE.syncGameState();
+  syncTasksFromSystems() {
+    if (typeof Tasks === "undefined") return;
+    if (typeof Negotiations !== "undefined" && Array.isArray(Negotiations.active)) {
+      Negotiations.active.forEach(item => {
+        if (item?.id && !Tasks.hasLink?.("negociacao", "negotiationId", item.id) && Tasks.createFromNegotiation) Tasks.createFromNegotiation(item);
+      });
     }
-
-    /*
-     * 12. ATUALIZA INTERFACE
-     */
-
-    if (
-      typeof Game.render === "function"
-    ) {
-      Game.render();
+    if (typeof PlayerOffers !== "undefined" && Array.isArray(PlayerOffers.active)) {
+      PlayerOffers.active.forEach(item => {
+        if (item?.id && !Tasks.hasLink?.("mercado", "offerId", item.id) && Tasks.createFromOffer) Tasks.createFromOffer(item);
+      });
     }
-
-    if (
-      typeof updateDashboard === "function"
-    ) {
-      updateDashboard();
+    if (typeof Delegation !== "undefined" && Array.isArray(Delegation.active)) {
+      Delegation.active.forEach(item => {
+        if (item?.id && !Tasks.hasLink?.("delegacao", "delegationId", item.id) && Tasks.createDelegationTask) Tasks.createDelegationTask(item);
+      });
     }
+  },
 
-    if (
-      typeof renderGameLog === "function"
-    ) {
-      renderGameLog();
-    }
+  checkTasks() {
+    if (typeof Tasks === "undefined") return;
+    const pending = Tasks.getPending ? Tasks.getPending() : [];
+    pending.forEach(task => {
+      if (!task.deadline || !Tasks.getDaysRemaining) return;
+      const days = Tasks.getDaysRemaining(task);
+      if (days === 1 && !task.warningShown) {
+        task.warningShown = true;
+        this.log(`⚠️ Prazo amanhã: ${task.title}.`);
+      }
+      if (days === 0 && !task.dueShown) {
+        task.dueShown = true;
+        this.log(`📋 Compromisso vence hoje: ${task.title}.`);
+      }
+    });
   },
 
   advanceDays(days = 1) {
