@@ -504,3 +504,14 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire);
   else wire();
 })();
+
+/* Staff impact layer */
+if(!window.StaffCore){window.StaffCore={
+ init:function(G){var s=G.state;s.staffModel=s.staffModel||{trainingBonus:0,scoutingBonus:0,leadershipBonus:0,baseBonus:0};s.scouting=s.scouting||{focus:"geral",reports:[]};return s;},
+ active:function(){return(window.STAFF||[]).filter(function(x){return x.status==="ativo"&&x.club==="corinthians";});},
+ metric:function(d,k){var a=this.active().filter(function(x){return x.department===d;});if(!a.length)return 0;return Math.round(a.reduce(function(n,x){return n+Number(x[k]||0);},0)/a.length);},
+ recalc:function(G){var s=this.init(G);s.staffModel.trainingBonus=Math.round((this.metric("comissao_tecnica","experience")+this.metric("comissao_tecnica","leadership"))/20);s.staffModel.scoutingBonus=Math.round((this.metric("scouting","scouting")+this.metric("scouting","experience"))/20);s.staffModel.leadershipBonus=Math.round(this.metric("futebol_profissional","leadership")/20);s.staffModel.baseBonus=Math.round((this.metric("base","scouting")+this.metric("base","experience"))/20);return s.staffModel;},
+ develop:function(G){var s=this.recalc(G);(s.squad||[]).forEach(function(p){if(p.status!=="elenco"&&p.status!=="base")return;var age=Number(p.age||25),pot=Number(p.potential||p.overall||60),gain=age<=23?.12+s.staffModel.baseBonus/100:age<=27?.08+s.staffModel.trainingBonus/100:0;if(Number(p.overall||0)<pot&&gain){p.developmentXP=Number(p.developmentXP||0)+gain;if(p.developmentXP>=1){p.overall=Math.min(pot,Number(p.overall||0)+1);p.developmentXP-=1;p.form=Math.min(100,Number(p.form||70)+2);}}});},
+ scout:function(G,focus){var s=this.init(G);s.scouting.focus=focus||"geral";var source=(window.PLAYERS||[]).filter(function(p){return p.club!=="corinthians"&&p.status!=="vendido";}).sort(function(a,b){return Number(b.potential||b.overall||0)-Number(a.potential||a.overall||0);}).slice(0,5);var reports=source.map(function(p){return{playerId:p.id,name:p.name,position:p.position,overall:p.overall,potential:p.potential,confidence:Math.min(99,60+(s.staffModel.scoutingBonus||0)*3),date:G.formatDate()};});s.scouting.reports=reports.concat(s.scouting.reports||[]).slice(0,30);if(G.addNews)G.addNews("Scouting","Novo relatório com "+reports.length+" jogadores.","SCOUTING");return reports;},
+ tick:function(G){var s=this.init(G);this.recalc(G);if(new Date(G.state.date).getDate()===1)this.develop(G);}
+};}
