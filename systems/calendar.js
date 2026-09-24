@@ -275,6 +275,26 @@ const CalendarSystem = {
     }
 
     /*
+     * COMPROMISSOS
+     */
+    if (typeof Tasks !== "undefined" && Tasks.getSorted) {
+      Tasks.getSorted().forEach(task => {
+        const days = Tasks.getDaysRemaining ? Tasks.getDaysRemaining(task) : null;
+        if (days === null || days < 0) return;
+
+        events.push({
+          type: task.type || "geral",
+          title: task.title,
+          description: task.description || "",
+          date: task.deadline,
+          days,
+          priority: Number(task.priority || 5),
+          taskId: task.id
+        });
+      });
+    }
+
+    /*
      * ORDENA POR DATA / PRIORIDADE
      */
 
