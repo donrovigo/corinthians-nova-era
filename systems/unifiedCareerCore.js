@@ -185,6 +185,7 @@
       if (!windowOpen) s.transferWindow.lastOpenNotice = null;
 
       if (day === 1) this.monthlyFinance(G);
+      this.recoverPlayers(G);
       this.contractTick(G);
       this.mediaTick(G);
       this.boardTick(G);
@@ -268,6 +269,24 @@
         const until = new Date(p.contractUntil);
         return Math.ceil((until - now) / 86400000) <= 180;
       }).map(p => p.id);
+    },
+
+    startNewSeason(G) {
+      const s = this.init(G);
+      s.season = Number(s.season || 2026) + 1;
+      s.seasonReview = null;
+      s.seasonStats = { matches:0,wins:0,draws:0,losses:0,goalsFor:0,goalsAgainst:0,trophies:[],objectiveProgress:0 };
+      s.lastUnifiedDay = null;
+      s.matches = [];
+      s.results = [];
+      s.standings = {points:0,played:0,wins:0,draws:0,losses:0,gf:0,ga:0};
+      s.officialFixtures = [];
+      s._registeredResults = {};
+      s.simulatedRounds = {};
+      if (window.CompetitionCore) CompetitionCore.init(G);
+      G.addNews("🗓️ Nova temporada", "A temporada " + s.season + " foi iniciada. O planejamento do elenco e da comissão foi renovado.", "TEMPORADA");
+      this.syncMirrors(G);
+      return s.season;
     },
 
     seasonTick(G) {
