@@ -1821,30 +1821,54 @@
       }
 
       const actionBox = document.getElementById("gameplay-actions");
-      if (actionBox && decisions.length) {
-        const decision = decisions[0];
-        actionBox.innerHTML = '<div class="decision-card"><strong>DECISÃO PENDENTE</strong><h4>' + escapeHtml(decision.title) + '</h4><p>' + escapeHtml(decision.description) + '</p>' +
-          decision.options.map(option => '<button class="gameplay-action decision-option" data-decision="' + escapeHtml(decision.id) + '" data-option="' + escapeHtml(option.id) + '"><span><strong>' + escapeHtml(option.text) + '</strong><small>Aplicar consequência no clube</small></span><b>›</b></button>').join("") + '</div>';
+      if (actionBox) {
+        if (decisions.length) {
+          const decision = decisions[0];
+          actionBox.innerHTML = '<div class="decision-card"><strong>DECISÃO PENDENTE</strong><h4>' + escapeHtml(decision.title) + '</h4><p>' + escapeHtml(decision.description) + '</p>' +
+            decision.options.map(option => '<button type="button" class="gameplay-action decision-option" data-decision="' + escapeHtml(decision.id) + '" data-option="' + escapeHtml(option.id) + '"><span><strong>' + escapeHtml(option.text) + '</strong><small>Aplicar consequência no clube</small></span><b>›</b></button>').join("") + '</div>';
 
-        actionBox.querySelectorAll(".decision-option").forEach(button => {
-          button.addEventListener("click", function() {
-            const d = Game.state.decisions.find(x => x.id === this.dataset.decision);
-            const option = d?.options?.find(x => x.id === this.dataset.option);
-            if (!d || !option) return;
-            Object.entries(option.effects || {}).forEach(([key, value]) => Game.change(key, value));
-            d.resolved = true;
-            Game.state.decisions = Game.state.decisions.filter(x => x.id !== d.id);
-            Game.addNews("Decisão executada", option.text + " — os indicadores do clube foram atualizados.", "DIRETORIA");
-            Game.log("📌 Decisão: " + option.text + ".");
-            updateDashboard();
+          actionBox.querySelectorAll(".decision-option").forEach(button => {
+            button.addEventListener("click", function(event) {
+              event.preventDefault();
+              event.stopPropagation();
+
+              if (this.dataset.processing === "1") return;
+              this.dataset.processing = "1";
+              this.disabled = true;
+
+              try {
+                const result = Game.resolveDecision
+                  ? Game.resolveDecision(this.dataset.decision, this.dataset.option)
+                  : { success: false, message: "O motor de decisões não está disponível." };
+
+                if (!result.success) {
+                  this.disabled = false;
+                  this.dataset.processing = "0";
+                  setEvent("Decisão não processada", result.message || "Não foi possível registrar esta resposta.", [
+                    { text: "VOLTAR", action: () => updateDashboard() }
+                  ]);
+                }
+              } catch (error) {
+                console.error("Erro ao processar decisão:", error);
+                this.disabled = false;
+                this.dataset.processing = "0";
+                setEvent("Erro na decisão", "Houve um erro ao concluir a resposta.", [
+                  { text: "VOLTAR AO PAINEL", action: () => updateDashboard() }
+                ]);
+              }
+            });
           });
-        });
+        } else {
+          // Sem decisão pendente: o centro de ações volta ao fluxo normal.
+          renderGameplayActions();
+        }
       }
-    }
-
     function renderGameplayActions() {
       const container = document.getElementById("gameplay-actions");
       if (!container || typeof Gameplay === "undefined") return;
+
+      const pendingDecisions = window.Game?.state?.decisions || [];
+      if (pendingDecisions.length) return;
 
       const actions = Gameplay.getActions ? Gameplay.getActions() : [];
       container.innerHTML = actions.map((item, index) =>
