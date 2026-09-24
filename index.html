@@ -1395,6 +1395,16 @@
           '<small>' + escapeHtml(type) + ' · ' + escapeHtml(label) + '</small></div>' +
           '<span class="commitment-priority">P' + escapeHtml(task.priority) + '</span></div>';
       }).join("");
+
+      list.querySelectorAll(".task-resolve").forEach(button => {
+        button.addEventListener("click", function() {
+          if (typeof Gameplay === "undefined" || !Gameplay.resolveTask) return;
+          Gameplay.resolveTask(this.getAttribute("data-task-id"));
+          updateDashboard();
+          renderCommitments();
+          renderGameLog();
+        });
+      });
     }
 
     function escapeHtml(value) {
