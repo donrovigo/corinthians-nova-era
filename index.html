@@ -434,6 +434,7 @@
           <button class="department-tab" onclick="openDepartmentPanel('futebol', this)">FUTEBOL</button>
           <button class="department-tab" onclick="openDepartmentPanel('marketing', this)">MARKETING</button>
           <button class="department-tab" onclick="openDepartmentPanel('financas', this)">FINANÇAS</button>
+          <button class="department-tab" onclick="openDepartmentPanel('juridico', this)">JURÍDICO</button>
           <button class="department-tab" onclick="openDepartmentPanel('contratos', this)">CONTRATOS</button>
           <button class="department-tab" onclick="openDepartmentPanel('transferban', this)">TRANSFER BAN</button>
           <button class="department-tab" onclick="openDepartmentPanel('delegacoes', this)">DELEGAÇÕES</button>
@@ -476,6 +477,8 @@
           <div class="department-metrics" id="finance-department-metrics"></div>
           <div class="department-grid" id="finance-department-list"></div>
         </div>
+
+        <div id="department-juridico" class="department-panel"><span class="eyebrow">JURÍDICO</span><h2>Riscos e contratos</h2><p>O jurídico apresenta riscos, cláusulas e decisões que podem afetar caixa, mercado e reputação.</p><div class="department-grid" id="legal-department-list"></div></div>
 
         <div id="department-contratos" class="department-panel">
           <span class="eyebrow">CONTRATOS</span>
@@ -778,6 +781,7 @@
       renderDepartmentMetrics();
       renderMarketDepartment();
       renderFinanceDepartment();
+      renderLegalDepartment();
       renderContractsDepartment();
       renderTransferBanDepartment();
       renderDelegationsDepartment();
@@ -830,6 +834,11 @@
         <article class="department-card"><strong>Dívida de Transfer Ban</strong><p>${formatMoney(f.transferBanDebt||0)}</p></article>
         <article class="department-card"><strong>Receita mensal</strong><p>${formatMoney(f.monthlyRevenue||0)}</p></article>
         <article class="department-card"><strong>Despesa mensal</strong><p>${formatMoney(f.monthlyExpenses||0)}</p></article>`;
+    }
+
+    function renderLegalDepartment() {
+      const el=document.getElementById("legal-department-list"); if(!el) return;
+      el.innerHTML='<article class="department-card"><div><strong>Diretor Jurídico</strong><p>Contratos, riscos, bloqueios e acordos.</p></div><button class="mini-button" onclick="departmentConversation(\'juridico\')">CONVERSAR</button></article>';
     }
 
     function renderContractsDepartment() {
