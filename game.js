@@ -76,6 +76,10 @@ const Game = {
     };
 
     this.state.narrativeHistory = [];
+    this.state.news = [];
+    this.state.mail = [];
+    this.state.decisions = [];
+    this.state.infoProcessed = {};
 
     if (typeof Tasks !== "undefined" && Tasks.reset) {
       Tasks.reset();
@@ -418,6 +422,119 @@ const Game = {
 
     }
 
+  },
+
+  ensureInformationCenter() {
+    const s = this.state;
+    if (!Array.isArray(s.news)) s.news = [];
+    if (!Array.isArray(s.mail)) s.mail = [];
+    if (!Array.isArray(s.decisions)) s.decisions = [];
+  },
+
+  addNews(title, message, category = "CLUBE") {
+    this.ensureInformationCenter();
+    this.state.news.unshift({
+      id: "news-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      date: this.formatDate(),
+      title, message, category, read: false
+    });
+    this.state.news = this.state.news.slice(0, 30);
+  },
+
+  addMail(from, subject, message, department = "DIRETORIA", action = null) {
+    this.ensureInformationCenter();
+    this.state.mail.unshift({
+      id: "mail-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      date: this.formatDate(),
+      from, subject, message, department, action, read: false
+    });
+    this.state.mail = this.state.mail.slice(0, 30);
+  },
+
+  addDecision(title, description, options) {
+    this.ensureInformationCenter();
+    this.state.decisions = this.state.decisions.filter(item => item.id !== title);
+    this.state.decisions.unshift({
+      id: title,
+      date: this.formatDate(),
+      title, description, options: Array.isArray(options) ? options : [],
+      resolved: false
+    });
+  },
+
+  processInformationCenter() {
+    this.ensureInformationCenter();
+    const date = this.state.date;
+    const key = date.toISOString().slice(0, 10);
+    this.state.infoProcessed = this.state.infoProcessed || {};
+
+    const once = (id, fn) => {
+      if (this.state.infoProcessed[id]) return;
+      this.state.infoProcessed[id] = true;
+      fn();
+    };
+
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+
+    if (day === 1) {
+      once("month-" + key, () => {
+        this.addNews("Novo mês no clube", "A diretoria recebeu o fechamento do período e os principais compromissos do mês.", "CALENDÁRIO");
+        this.addMail("Diretoria Financeira", "Fechamento mensal", "O relatório financeiro do mês está disponível para revisão.", "FINANÇAS");
+      });
+    }
+
+    if (day === 5 || day === 20) {
+      once("salary-" + key, () => {
+        this.addMail("Financeiro", "Folha de pagamento", "A folha entra no ciclo de pagamentos. Verifique caixa e obrigações antes de assumir novos compromissos.", "FINANÇAS");
+      });
+    }
+
+    if (month === 2 && day === 1) {
+      once("season-" + key, () => {
+        this.addNews("Temporada ganha ritmo", "O calendário esportivo começa a pressionar planejamento, elenco e comissão técnica.", "FUTEBOL");
+        this.addMail("Departamento de Futebol", "Planejamento esportivo", "Precisamos alinhar preparação, elenco e próximos jogos.", "FUTEBOL");
+      });
+    }
+
+    if (month === 6 && day === 1) {
+      once("midyear-" + key, () => {
+        this.addNews("Janela e orçamento entram no radar", "Mercado e planejamento financeiro passam a disputar espaço nas próximas decisões.", "MERCADO");
+        this.addMail("Mercado", "Relatório de oportunidades", "Scouting atualizou nomes e custos. A decisão agora depende do orçamento disponível.", "MERCADO");
+      });
+    }
+
+    if (month === 11 && day === 20 && this.state.career === "presidente" && !this.state.election.won) {
+      once("election-week-" + key, () => {
+        this.addNews("Semana decisiva", "A eleição presidencial se aproxima. Conselho, imprensa e torcida acompanham cada movimento.", "POLÍTICA");
+        this.addMail("Secretaria do Conselho", "Eleição presidencial", "A reunião eleitoral está próxima. Sua articulação política entra na reta final.", "POLÍTICA");
+      });
+    }
+
+    if (typeof FINANCE !== "undefined" && FINANCE.getFinancialHealth) {
+      const health = FINANCE.getFinancialHealth();
+      if (health === "critica" || health === "muito_fragil") {
+        once("finance-alert-" + key, () => {
+          this.addNews("🚨 Alerta financeiro", "O caixa e as obrigações exigem atenção imediata.", "FINANÇAS");
+          this.addMail("Diretoria Financeira", "AÇÃO NECESSÁRIA: caixa sob pressão", "Recomendamos revisar despesas, receitas e compromissos antes de avançar.", "FINANÇAS", "finance-review");
+          this.addDecision("finance-" + key, "Como você quer reagir à pressão financeira?", [
+            { id: "review", text: "Revisar imediatamente", effects: { pressPressure: -2, reputation: 1 } },
+            { id: "communicate", text: "Comunicar transparência", effects: { reputation: 2, pressPressure: 2 } },
+            { id: "ignore", text: "Adiar a decisão", effects: { pressPressure: 5, reputation: -2 } }
+          ]);
+        });
+      }
+    }
+
+    const pending = typeof Tasks !== "undefined" && Tasks.getPending ? Tasks.getPending() : [];
+    const urgent = pending.find(task => task.daysRemaining !== null && task.daysRemaining <= 1);
+    if (urgent) {
+      once("task-alert-" + urgent.id + "-" + key, () => {
+        this.addMail("Central de Compromissos", "Prazo crítico: " + urgent.title, "Este compromisso vence hoje ou amanhã. Uma decisão pode evitar perda de confiança.", "AGENDA");
+      });
+    }
+
+    if (typeof updateDashboard === "function") updateDashboard();
   },
 
   getStatus() {
