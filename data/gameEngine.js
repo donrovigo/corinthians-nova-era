@@ -64,6 +64,7 @@ const GameEngine = {
       this.processDailySystems();
       if (window.CareerCore) CareerCore.tick(Game);
       if (window.CompetitionCore) CompetitionCore.onDay(Game);
+      if (window.SquadCore) SquadCore.tick(Game);
       if (typeof Game !== "undefined" && Game.processInformationCenter) Game.processInformationCenter();
       this.checkTasks();
       this.checkRandomEvent();
