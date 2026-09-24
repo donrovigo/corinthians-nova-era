@@ -33,6 +33,7 @@
 <script src="data/playerOffers.js" defer></script>
 <script src="systems/tasks.js" defer></script>
 <script src="data/gameEngine.js" defer></script>
+<script src="data/gameplay.js" defer></script>
 
 <!-- ============================= -->
 <!-- MOTOR PRINCIPAL                -->
@@ -528,6 +529,18 @@
 
             </div>
 
+          </div>
+
+
+          <!-- CENTRAL DE DECISÕES -->
+          <div class="panel-card gameplay-panel">
+            <div class="panel-heading-row">
+              <div>
+                <span class="eyebrow">CENTRAL DE DECISÕES</span>
+                <h3>O que você quer fazer?</h3>
+              </div>
+            </div>
+            <div id="gameplay-actions" class="gameplay-actions"></div>
           </div>
 
 
@@ -1224,6 +1237,7 @@
 
 
       updateElectionProgress();
+      renderGameplayActions();
       renderCommitments();
 
       renderGameLog();
@@ -1298,6 +1312,41 @@
           })
           .join("");
 
+    }
+
+
+    function renderGameplayActions() {
+      const container = document.getElementById("gameplay-actions");
+      if (!container || typeof Gameplay === "undefined") return;
+
+      const actions = Gameplay.getActions ? Gameplay.getActions() : [];
+      container.innerHTML = actions.map((item, index) =>
+        '<button class="gameplay-action" data-action-index="' + index + '">' +
+          '<span><strong>' + escapeHtml(item.title) + '</strong>' +
+          '<small>' + escapeHtml(item.description) + '</small></span>' +
+          '<b>›</b>' +
+        '</button>'
+      ).join("");
+
+      container.querySelectorAll(".gameplay-action").forEach(button => {
+        button.addEventListener("click", function() {
+          const index = Number(this.getAttribute("data-action-index"));
+          const item = actions[index];
+          if (!item || typeof item.action !== "function") return;
+
+          const result = item.action();
+
+          updateDashboard();
+          renderCommitments();
+          renderGameLog();
+
+          if (result && result.success === false && result.message) {
+            setEvent("Ação não concluída", result.message, [
+              { text: "Voltar", action: () => updateDashboard() }
+            ]);
+          }
+        });
+      });
     }
 
 
