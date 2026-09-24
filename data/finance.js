@@ -30,6 +30,8 @@ const FINANCE = {
 
     academyRevenue: 0,
 
+    transferExpenses: 0,
+
     operatingExpenses: 0,
 
     debtPayments: 0,
