@@ -68,6 +68,8 @@ const Narrative = {
       support: Number(s?.politicalSupport || 0),
       trust: Number(s?.councilTrust || 0),
       fans: Number(s?.fanMood || 0),
+      fanApproval: Number(s?.fanApproval ?? s?.fanMood ?? 0),
+      councilMood: Number(s?.councilMood ?? s?.councilTrust ?? 0),
       morale: Number(s?.dressingRoomMorale || 0),
       leak: Number(s?.leakRisk || 0)
     };
@@ -138,6 +140,13 @@ const Narrative = {
             : " Seu espaço político ainda está sendo disputado.";
 
       base += politicalLine;
+      if (c.councilMood >= 70) base += " O ambiente no Conselho está favorável a você.";
+      else if (c.councilMood <= 30) base += " O ambiente no Conselho está claramente azedo.";
+    }
+
+    if (event.category === "torcida") {
+      if (c.fanApproval >= 70) base += " A torcida está comprando a ideia da gestão.";
+      else if (c.fanApproval <= 30) base += " A paciência da torcida está perto do limite.";
     }
 
     if (event.category === "mercado" && c.morale < 45) {
