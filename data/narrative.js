@@ -11,6 +11,24 @@ const Narrative = {
     "um assessor próximo da diretoria"
   ],
 
+  realSimulationNames() {
+    const names = [];
+
+    if (typeof POLITICS !== "undefined" && Array.isArray(POLITICS.candidates)) {
+      POLITICS.candidates.forEach(person => {
+        if (person?.name) names.push(person.name);
+      });
+    }
+
+    if (typeof STAFF !== "undefined" && Array.isArray(STAFF)) {
+      STAFF.forEach(person => {
+        if (person?.name) names.push(person.name);
+      });
+    }
+
+    return names;
+  },
+
   state() {
     if (typeof Game === "undefined") return null;
     return Game.state;
@@ -64,7 +82,10 @@ const Narrative = {
 
     this.remember(event.id, tone);
 
-    const speaker = this.pick(this.names);
+    const realNames = this.realSimulationNames();
+    const speaker = realNames.length && Math.random() < 0.55
+      ? this.pick(realNames)
+      : this.pick(this.names);
     const c = this.context();
 
     const voices = {
@@ -103,6 +124,10 @@ const Narrative = {
     };
 
     let base = this.pick(voices[tone]);
+
+    if (realNames.includes(speaker)) {
+      base = "SIMULAÇÃO: " + speaker + " — " + base;
+    }
 
     if (event.category === "politica" || event.category === "conselho" || event.category === "eleicao") {
       const politicalLine =
