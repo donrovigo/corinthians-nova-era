@@ -565,8 +565,10 @@ const Game = {
     const m = this.state.matchEngine;
     if (!m.active) return false;
     this.ensureManagerModel();
-    const homeProfile = this.buildMatchProfile(m.home, m.home === "Corinthians" ? 78 : 74);
-    const awayProfile = this.buildMatchProfile(m.away, m.away === "Corinthians" ? 78 : 74);
+    const xi = window.SquadCore ? SquadCore.getXI(this) : [];
+    const squadBoost = xi.length ? xi.reduce((a,p)=>a+(p.overall||70)*(p.condition||80)/100,0)/xi.length : 70;
+    const homeProfile = this.buildMatchProfile(m.home, m.home === "Corinthians" ? Math.round(squadBoost) : 74);
+    const awayProfile = this.buildMatchProfile(m.away, m.away === "Corinthians" ? Math.round(squadBoost) : 74);
     for (let i = 0; i < minutes && m.minute < 90; i++) {
       m.minute++;
       const hBias = homeProfile.attack + homeProfile.control + 5 + (this.state.fanMood - 50) * 0.15;
