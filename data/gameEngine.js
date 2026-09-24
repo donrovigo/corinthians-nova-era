@@ -57,7 +57,7 @@ const GameEngine = {
 
   advanceDays(days = 1) {
 
-    days = Math.max(1, Number(days) || 1);
+    days = Math.max(1, Math.floor(Number(days) || 1));
 
     for (let i = 0; i < days; i++) {
       Game.state.date.setDate(Game.state.date.getDate() + 1);
@@ -119,22 +119,6 @@ const GameEngine = {
         this.log(`📋 Compromisso vence hoje: ${task.title}.`);
       }
     });
-  },
-
-  advanceDays(days = 1) {
-
-    days = Math.max(
-      1,
-      Number(days)
-    );
-
-    for (
-      let i = 0;
-      i < days;
-      i++
-    ) {
-      this.advanceDay();
-    }
   },
 
   checkFinancialCycle() {
@@ -407,6 +391,19 @@ const GameEngine = {
     return `${year}-${month}-${day}`;
   },
 
+  syncFinance() {
+    if (typeof FINANCE !== "undefined" && FINANCE.syncGameState) {
+      FINANCE.syncGameState();
+    }
+  },
+
+  render() {
+    if (typeof Game !== "undefined" && Game.render) Game.render();
+    if (typeof updateDashboard === "function") updateDashboard();
+    if (typeof renderCommitments === "function") renderCommitments();
+    if (typeof renderGameLog === "function") renderGameLog();
+  },
+
   getStatus() {
 
     return {
@@ -445,8 +442,12 @@ const GameEngine = {
       contracts:
         typeof Contracts !== "undefined"
           ? Contracts.getContractSummary()
-          : null
+          : null,
 
+      tasks:
+        typeof Tasks !== "undefined" && Tasks.getSummary
+          ? Tasks.getSummary()
+          : null
     };
   }
 };
