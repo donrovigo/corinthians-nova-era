@@ -529,6 +529,106 @@ const Game = {
     }
   },
 
+  ensureMatchEngine() {
+    const s = this.state;
+    s.matchEngine = s.matchEngine || { active: false, fixtureId: null, minute: 0, home: null, away: null, events: [], stats: { home: { shots: 0, shotsOnTarget: 0, possession: 50, xg: 0 }, away: { shots: 0, shotsOnTarget: 0, possession: 50, xg: 0 } }, score: { home: 0, away: 0 } };
+  },
+
+  buildMatchProfile(club = "Corinthians", strength = 78) {
+    this.ensureManagerModel();
+    return {
+      club, strength,
+      attack: Math.round(strength + (this.state.tactics.inPossession.tempo - 50) * 0.12),
+      control: Math.round(strength + (this.state.tactics.inPossession.passing - 50) * 0.10),
+      defense: Math.round(strength + (this.state.tactics.outOfPossession.compactness - 50) * 0.12),
+      press: Math.round(strength + (this.state.tactics.outOfPossession.press - 50) * 0.10)
+    };
+  },
+
+  startMatchday(fixture) {
+    if (!fixture) return false;
+    this.ensureMatchEngine();
+    const home = fixture.home || "Corinthians", away = fixture.away || fixture.opponent || "Adversário";
+    this.state.matchEngine = {
+      active: true, fixtureId: fixture.id || Date.now(), minute: 0, home, away,
+      events: [{ minute: 0, type: "system", text: "Apito inicial. O plano de jogo está valendo." }],
+      stats: { home: { shots: 0, shotsOnTarget: 0, possession: 50, xg: 0 }, away: { shots: 0, shotsOnTarget: 0, possession: 50, xg: 0 } },
+      score: { home: 0, away: 0 }
+    };
+    fixture.status = "live";
+    this.addNews("🏟️ Matchday", `${home} x ${away} começou.`, "JOGO");
+    return true;
+  },
+
+  simulateMatchMinutes(minutes = 5) {
+    this.ensureMatchEngine();
+    const m = this.state.matchEngine;
+    if (!m.active) return false;
+    this.ensureManagerModel();
+    const homeProfile = this.buildMatchProfile(m.home, m.home === "Corinthians" ? 78 : 74);
+    const awayProfile = this.buildMatchProfile(m.away, m.away === "Corinthians" ? 78 : 74);
+    for (let i = 0; i < minutes && m.minute < 90; i++) {
+      m.minute++;
+      const hBias = homeProfile.attack + homeProfile.control + 5 + (this.state.fanMood - 50) * 0.15;
+      const aBias = awayProfile.attack + awayProfile.control;
+      const total = Math.max(1, hBias + aBias);
+      const homePoss = Math.max(30, Math.min(70, Math.round(50 + (hBias-aBias) / total * 35)));
+      m.stats.home.possession = homePoss; m.stats.away.possession = 100-homePoss;
+      const eventRoll = Math.random() * 100;
+      const chance = 5.2 + Math.max(0, (hBias-aBias) / 80);
+      if (eventRoll < chance) {
+        const side = Math.random() < hBias / total ? "home" : "away";
+        const team = side === "home" ? m.home : m.away;
+        const st = m.stats[side];
+        st.shots++;
+        const onTarget = Math.random() < 0.34;
+        if (onTarget) st.shotsOnTarget++;
+        const xg = onTarget ? (0.05 + Math.random()*0.20) : (0.01 + Math.random()*0.07);
+        st.xg += xg;
+        if (Math.random() < (onTarget ? 0.11 : 0.015)) {
+          m.score[side]++;
+          m.events.unshift({ minute: m.minute, type: "goal", text: `⚽ GOL! ${team}` });
+          this.addNews("⚽ Gol no Matchday", `${team} marcou aos ${m.minute}'.`, "JOGO");
+        } else {
+          m.events.unshift({ minute: m.minute, type: "chance", text: `${m.minute}' — ${team} criou uma oportunidade` });
+        }
+      }
+    }
+    if (m.minute >= 90) this.finishMatchday();
+    return true;
+  },
+
+  applyMatchInstruction(type) {
+    this.ensureManagerModel();
+    const map = {
+      attacking: { tempo: 72, passing: 58, pressing: 68 },
+      balanced: { tempo: 55, passing: 55, pressing: 55 },
+      defensive: { tempo: 42, passing: 52, pressing: 43 }
+    };
+    const p = map[type] || map.balanced;
+    this.applyTacticalPlan({ style: type, inPossession: { tempo: p.tempo, passing: p.passing }, outOfPossession: { press: p.pressing } });
+    this.addNews("📋 Instrução de jogo", `Plano alterado para ${type}.`, "JOGO");
+  },
+
+  finishMatchday() {
+    const m = this.state.matchEngine;
+    if (!m.active) return false;
+    const fixture = (this.state.matches || []).find(x => String(x.id) === String(m.fixtureId));
+    if (fixture) {
+      fixture.status = "played"; fixture.played = true; fixture.homeScore = m.score.home; fixture.awayScore = m.score.away;
+    }
+    const isHome = m.home === "Corinthians";
+    const gf = isHome ? m.score.home : m.score.away, ga = isHome ? m.score.away : m.score.home;
+    this.state.results = this.state.results || [];
+    this.state.results.push({ date: this.formatDate(), opponent: isHome ? m.away : m.home, gf, ga, competition: fixture?.competition || "Jogo" });
+    this.change("reputation", gf > ga ? 2 : gf === ga ? 0 : -2);
+    this.change("fanMood", gf > ga ? 4 : gf === ga ? 0 : -5);
+    this.addNews("🏁 Fim de jogo", `${m.home} ${gf} x ${ga} ${m.away}`, "JOGO");
+    this.addMail("Comissão Técnica", "Relatório pós-jogo", `Resultado: ${m.home} ${gf} x ${ga} ${m.away}. xG ${m.stats.home.xg.toFixed(2)}–${m.stats.away.xg.toFixed(2)}.`, "FUTEBOL");
+    m.active = false;
+    return true;
+  },
+
   generateScheduledMatch() {
     this.ensureSeasonSystems();
     const date = this.formatDate();
