@@ -1187,6 +1187,29 @@
           state.fanMood;
       }
 
+      const fanApproval = document.getElementById("fan-approval");
+      const councilMood = document.getElementById("council-mood");
+      const dressingMood = document.getElementById("dressing-mood");
+      const pressMood = document.getElementById("press-mood");
+
+      if (fanApproval) fanApproval.textContent = state.fanApproval ?? state.fanMood;
+      if (councilMood) councilMood.textContent = state.councilMood ?? state.councilTrust;
+      if (dressingMood) dressingMood.textContent = state.dressingRoomMorale;
+      if (pressMood) pressMood.textContent = state.pressPressure;
+
+      const label = (value, good, bad, mid) =>
+        value >= good ? "Favorável" : value <= bad ? "Crítico" : mid;
+
+      const fanLabel = document.getElementById("fan-approval-label");
+      const councilLabel = document.getElementById("council-mood-label");
+      const dressingLabel = document.getElementById("dressing-mood-label");
+      const pressLabel = document.getElementById("press-mood-label");
+
+      if (fanLabel) fanLabel.textContent = label(state.fanApproval ?? state.fanMood, 70, 30, "Neutro");
+      if (councilLabel) councilLabel.textContent = label(state.councilMood ?? state.councilTrust, 70, 30, "Neutro");
+      if (dressingLabel) dressingLabel.textContent = label(state.dressingRoomMorale, 70, 30, "Estável");
+      if (pressLabel) pressLabel.textContent = state.pressPressure >= 70 ? "Alta" : state.pressPressure >= 35 ? "Moderada" : "Baixa";
+
       if (press) {
         press.textContent =
           state.pressPressure;
