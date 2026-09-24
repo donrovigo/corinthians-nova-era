@@ -728,6 +728,53 @@ const Game = {
     });
   },
 
+  resolveDecision(decisionId, optionId) {
+    this.ensureInformationCenter();
+
+    const decision = this.state.decisions.find(item => String(item.id) === String(decisionId));
+    if (!decision) {
+      return { success: false, message: "Esta decisão já foi resolvida ou não está mais disponível." };
+    }
+
+    const option = (decision.options || []).find(item => String(item.id) === String(optionId));
+    if (!option) {
+      return { success: false, message: "A resposta selecionada não está mais disponível." };
+    }
+
+    if (decision.resolved) {
+      return { success: false, message: "Esta decisão já foi processada." };
+    }
+
+    decision.resolved = true;
+
+    Object.entries(option.effects || {}).forEach(([key, value]) => {
+      this.change(key, Number(value) || 0);
+    });
+
+    this.state.decisions = this.state.decisions.filter(item => String(item.id) !== String(decisionId));
+
+    const consequence = option.result || option.description ||
+      "A decisão foi registrada e os indicadores do clube foram atualizados.";
+
+    this.addNews("Decisão executada", option.text + " — " + consequence, "DIRETORIA");
+    this.addMail("Diretoria", "Decisão registrada: " + option.text, consequence, "DIRETORIA");
+    this.log("📌 Decisão: " + option.text + ".");
+
+    if (typeof setEvent === "function") {
+      setEvent(
+        "Decisão registrada",
+        consequence,
+        [{ text: "CONTINUAR", action: () => updateDashboard() }]
+      );
+    }
+
+    if (typeof updateDashboard === "function") {
+      updateDashboard();
+    }
+
+    return { success: true, option };
+  },
+
   processInformationCenter() {
     this.ensureInformationCenter();
     const date = this.state.date;
