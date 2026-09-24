@@ -58,6 +58,25 @@ const Game = {
       won: false
     };
 
+    this.state.politicalSupport = 0;
+    this.state.councilTrust = 20;
+    this.state.fanMood = 50;
+    this.state.pressPressure = 10;
+    this.state.dressingRoomMorale = 60;
+    this.state.coachConfidence = 50;
+    this.state.leakRisk = 5;
+    this.state.reputation = 50;
+
+    this.state.club = {
+      debt: 0,
+      cash: 0,
+      transferBan: true
+    };
+
+    if (typeof Tasks !== "undefined" && Tasks.reset) {
+      Tasks.reset();
+    }
+
     /*
      * Inicializa o motor financeiro
      */
