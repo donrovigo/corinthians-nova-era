@@ -73,6 +73,8 @@ const Game = {
       transferBan: true
     };
 
+    this.state.narrativeHistory = [];
+
     if (typeof Tasks !== "undefined" && Tasks.reset) {
       Tasks.reset();
     }
