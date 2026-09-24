@@ -431,6 +431,8 @@
           <button class="department-tab active" onclick="openDepartmentPanel('overview', this)">VISÃO GERAL</button>
           <button class="department-tab" onclick="openDepartmentPanel('politica', this)">POLÍTICA</button>
           <button class="department-tab" onclick="openDepartmentPanel('mercado', this)">MERCADO</button>
+          <button class="department-tab" onclick="openDepartmentPanel('futebol', this)">FUTEBOL</button>
+          <button class="department-tab" onclick="openDepartmentPanel('marketing', this)">MARKETING</button>
           <button class="department-tab" onclick="openDepartmentPanel('financas', this)">FINANÇAS</button>
           <button class="department-tab" onclick="openDepartmentPanel('contratos', this)">CONTRATOS</button>
           <button class="department-tab" onclick="openDepartmentPanel('transferban', this)">TRANSFER BAN</button>
@@ -458,6 +460,16 @@
           <div class="department-grid" id="market-department-list"></div>
         </div>
 
+        <div id="department-futebol" class="department-panel">
+          <span class="eyebrow">DEPARTAMENTO DE FUTEBOL</span><h2>Comissão e diretor de futebol</h2>
+          <p>Converse sobre elenco, treinador, vestiário, mercado e planejamento.</p>
+          <div class="department-grid" id="football-department-list"></div>
+        </div>
+        <div id="department-marketing" class="department-panel">
+          <span class="eyebrow">MARKETING</span><h2>Marca, receitas e patrocinadores</h2>
+          <p>Negocie oportunidades comerciais sem perder o alinhamento com futebol, financeiro e comunicação.</p>
+          <div class="department-grid" id="marketing-department-list"></div>
+        </div>
         <div id="department-financas" class="department-panel">
           <span class="eyebrow">FINANÇAS</span>
           <h2>Sala financeira</h2>
@@ -697,6 +709,24 @@
       renderDepartmentCenter(id);
     }
 
+    function departmentConversation(id) {
+      if (typeof DepartmentHub === "undefined") return;
+      const result=DepartmentHub.openConversation(id);
+      if (!result.success) { setEvent("Reunião", result.message, []); return; }
+      const s=result.scenario;
+      setEvent(result.department.name + " — reunião", s.description, s.choices.map(choice => ({
+        text: choice.text,
+        action: () => {
+          Object.entries(choice.effects || {}).forEach(([k,v]) => Game.change(k,v));
+          Game.log("SIMULAÇÃO: " + result.department.name + " — " + choice.result);
+          DepartmentHub.createFollowUp(id, "acompanhar decisão da reunião");
+          Game.render();
+          renderDepartmentCenter("alinhamento");
+        }
+      })));
+      openDepartmentPanel("alinhamento");
+    }
+
     function departmentAction(id, action) {
       if (typeof DepartmentHub === "undefined") return;
       let result = null;
@@ -743,6 +773,8 @@
           }).join("") : '<p class="empty-state">Nenhuma reunião registrada nesta carreira.</p>');
       }
 
+      renderFootballDepartment();
+      renderMarketingDepartment();
       renderDepartmentMetrics();
       renderMarketDepartment();
       renderFinanceDepartment();
@@ -750,6 +782,16 @@
       renderTransferBanDepartment();
       renderDelegationsDepartment();
       renderPoliticsDepartment();
+    }
+
+    function renderFootballDepartment() {
+      const el=document.getElementById("football-department-list"); if(!el) return;
+      el.innerHTML='<article class="department-card"><div><strong>Diretor de Futebol</strong><p>Mercado, planejamento e relação com a comissão.</p></div><button class="mini-button" onclick="departmentConversation(\'futebol\')">CONVERSAR</button></article><article class="department-card"><div><strong>Comissão Técnica</strong><p>Vestiário, desempenho e confiança do treinador.</p></div><button class="mini-button" onclick="departmentConversation(\'futebol\')">REUNIÃO</button></article>';
+    }
+
+    function renderMarketingDepartment() {
+      const el=document.getElementById("marketing-department-list"); if(!el) return;
+      el.innerHTML='<article class="department-card"><div><strong>Diretor de Marketing</strong><p>Patrocínios, ativações e receitas comerciais.</p></div><button class="mini-button" onclick="departmentConversation(\'marketing\')">NEGOCIAR</button></article><article class="department-card"><div><strong>Marca e Comunicação</strong><p>Campanhas, exposição e impacto na torcida.</p></div><button class="mini-button" onclick="departmentConversation(\'marketing\')">REUNIÃO</button></article>';
     }
 
     function renderDepartmentMetrics() {
