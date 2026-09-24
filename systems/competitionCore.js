@@ -47,6 +47,36 @@ window.CompetitionCore={
     this.rebuildTables(G);
   },
 
+  ensureBrasileiraoTable:function(G){
+    var s=this.init(G);
+    var teams=window.getBrasileiraoTeams?getBrasileiraoTeams():["Corinthians"];
+    s.leagueTables=s.leagueTables||{};
+    var table=s.leagueTables.brasileirao||{};
+    teams.forEach(function(team){
+      if(!table[team]) table[team]={team:team,played:0,wins:0,draws:0,losses:0,gf:0,ga:0,points:0};
+    });
+    s.leagueTables.brasileirao=table;
+    return table;
+  },
+
+  recordLeagueMatch:function(G,home,away,hg,ag){
+    var table=this.ensureBrasileiraoTable(G);
+    function apply(team,gf,ga){
+      var t=table[team]; if(!t)return;
+      t.played++; t.gf+=gf; t.ga+=ga;
+      if(gf>ga){t.wins++;t.points+=3;} else if(gf===ga){t.draws++;t.points++} else t.losses++;
+    }
+    apply(home,hg,ag); apply(away,ag,hg);
+    return table;
+  },
+
+  getSortedBrasileirao:function(G){
+    var table=this.ensureBrasileiraoTable(G);
+    return Object.values(table).sort(function(a,b){
+      return b.points-a.points || (b.gf-b.ga)-(a.gf-a.ga) || b.gf-a.gf || a.team.localeCompare(b.team);
+    });
+  },
+
   rebuildTables:function(G){
     var s=this.init(G);
     var st={};
