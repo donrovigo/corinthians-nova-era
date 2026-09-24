@@ -195,3 +195,5 @@ const Contracts = {
 };
 
 window.Contracts = Contracts;
+
+// Integrated contract lifecycle hook.
