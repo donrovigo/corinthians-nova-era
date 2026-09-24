@@ -8,7 +8,7 @@
   "use strict";
 
   const Core = {
-    version: 1,
+    version: 2,
 
     init(G) {
       const s = G.state;
@@ -120,13 +120,15 @@
 
     teamStrength(G) {
       this.prepareSquad(G);
-      const ids = Object.values(G.state.lineup);
-      const xi = G.state.squad.filter(p => ids.includes(p.id));
+      const xi = window.SquadCore && SquadCore.getXI ? SquadCore.getXI(G) : G.state.squad.filter(p => Object.values(G.state.lineup).includes(p.id));
       if (!xi.length) return 70;
-      const avg = xi.reduce((n, p) => n + Number(p.overall || 70), 0) / xi.length;
-      const cond = xi.reduce((n, p) => n + Number(p.condition || 80), 0) / xi.length;
-      const form = xi.reduce((n, p) => n + Number(p.form || 70), 0) / xi.length;
-      return Math.round(avg * 0.7 + cond * 0.15 + form * 0.15);
+      const avg = xi.reduce((n,p) => n + Number(p.overall || 70),0) / xi.length;
+      const cond = xi.reduce((n,p) => n + Number(p.condition || 80),0) / xi.length;
+      const form = xi.reduce((n,p) => n + Number(p.form || 70),0) / xi.length;
+      const morale = xi.reduce((n,p) => n + Number(p.morale || 70),0) / xi.length;
+      const fitness = xi.reduce((n,p) => n + Number(p.fitness || 80),0) / xi.length;
+      const staff = Number(G.state.staffModel?.trainingBonus || 0) * .35;
+      return Math.round(avg*.62 + cond*.12 + form*.12 + morale*.07 + fitness*.07 + staff);
     },
 
     beforeMatch(G, fixture) {
