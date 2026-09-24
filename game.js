@@ -81,6 +81,10 @@ const Game = {
       Tasks.reset();
     }
 
+    if (typeof DepartmentHub !== "undefined" && DepartmentHub.reset) {
+      DepartmentHub.reset();
+    }
+
     /*
      * Inicializa o motor financeiro
      */
