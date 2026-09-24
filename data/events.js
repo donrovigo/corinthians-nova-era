@@ -693,3 +693,11 @@ window.getAvailableEvents = getAvailableEvents;
 window.getRandomEvent = getRandomEvent;
 window.triggerEvent = triggerEvent;
 window.chooseEvent = chooseEvent;
+
+
+window.Events = {
+  getAvailableEvents,
+  getRandomEvent: () => getRandomEvent(window.Game ? Game.state : null),
+  triggerEvent,
+  chooseEvent
+};
