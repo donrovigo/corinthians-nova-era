@@ -479,3 +479,27 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+
+.commitment-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.task-resolve {
+  border: 1px solid #3a3a3a;
+  background: #202020;
+  color: #bbb;
+  border-radius: 5px;
+  padding: 5px 7px;
+  font-size: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.task-resolve:hover {
+  border-color: #777;
+  color: #fff;
+}
