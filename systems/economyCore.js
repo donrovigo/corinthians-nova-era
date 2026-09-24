@@ -170,8 +170,7 @@
 
       this.importSquad(G);
       s.finance.transferSpend += offer.fee;
-      s.club.cash = Math.max(-999999999999, Number(s.club.cash || 0) - offer.fee);
-      this.syncLegacy(G);
+      this.reconcileFinance(G);
 
       return result;
     },
@@ -201,10 +200,7 @@
         fee: amount,
         date: G.formatDate()
       });
-      s.finance.playerSales += amount;
-      s.finance.revenue += amount;
-      s.club.cash = Number(s.club.cash || 0) + amount;
-      this.syncLegacy(G);
+      this.reconcileFinance(G);
 
       G.addNews("💰 Venda concluída", p.name + " saiu por R$ " + amount.toLocaleString("pt-BR") + ".", "MERCADO");
       return result;
@@ -275,6 +271,9 @@
         s.finance.wageBill = Number(FINANCE.state.payroll || 0);
         s.finance.monthlyRevenue = Number(FINANCE.state.monthlyRevenue || s.finance.monthlyRevenue || 0);
         s.finance.monthlyExpenses = Number(FINANCE.state.monthlyExpenses || s.finance.monthlyExpenses || 0);
+        s.finance.playerSales = Number(FINANCE.state.playerSalesRevenue || s.finance.playerSales || 0);
+        s.finance.matchdayRevenue = Number(FINANCE.state.matchdayRevenue || s.finance.matchdayRevenue || 0);
+        s.finance.prizeMoney = Number(FINANCE.state.prizeRevenue || s.finance.prizeMoney || 0);
       }
 
       s.club = s.club || {};
@@ -304,14 +303,17 @@
         return false;
       }
 
-      s.club.cash -= debt;
-      s.finance.expenses += debt;
-
-      if (window.FINANCE && FINANCE.state) {
-        FINANCE.state.transferBanDebt = 0;
-        FINANCE.state.transferBans.forEach(b => b.active = false);
-        if (FINANCE.syncGameState) FINANCE.syncGameState();
+      if (window.FINANCE && FINANCE.payTransferBan) {
+        for (const ban of active) {
+          const paid = FINANCE.payTransferBan(ban.id);
+          if (!paid.success) return false;
+        }
+      } else {
+        s.club.cash -= debt;
+        s.finance.expenses += debt;
       }
+
+      if (window.FINANCE && FINANCE.syncGameState) FINANCE.syncGameState();
 
       s.transferMarket.transferBanDebt = 0;
       s.transferMarket.transferBan = false;
